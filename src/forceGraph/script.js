@@ -359,7 +359,7 @@ legend_g2
   .style("fill", "black");
 legend_g2.append("text").attr("x", 15).attr("y", 20).text("short runtime").style("font-size", "10px");
 
-// const zoom = d3.zoom().scaleExtent([-40, 40]).on("zoom", zoomed);
+// const zoom = d3.zoom().scaleExtent([-20, 20]).on("zoom", zoomed);
 // function zoomed({ transform }) {
 //   svg.attr("transform", transform);
 // }
