@@ -67,8 +67,8 @@ const simulation = d3
       .id((d) => d.id) // This sets the node id accessor to the specified function. If not specified, will default to the index of a node.
       .distance(120)
   )
-  .force("charge", d3.forceManyBody().strength(-700)) // This adds repulsion (if it's negative) between nodes.
-  .force("center", d3.forceCenter(width / 2, height / 2)); // This force attracts nodes to the center of the svg area
+  .force("charge", d3.forceManyBody().strength(-500)) // This adds repulsion (if it's negative) between nodes.
+  .force("center", d3.forceCenter(width / 2, height / 2 + 10)); // 调整在画布中的位置 This force attracts nodes to the center of the svg area 
 
 const svg = d3
   .select("#force-graph")
@@ -87,13 +87,13 @@ const subgraph = svg
 
 subgraph.append("text").style("font-size", "16px"); //  选中的组件名称
 
-// 标题 机器人组件 灰色边框表示运行时长
+// 标题：机器人组件 灰色边框表示运行时长
 svg
   .append("text")
   .text("Robot Components") // title
   .attr("text-anchor", "middle")
   .attr("x", width / 2)
-  .attr("y", 20)
+  .attr("y", 30)
   .style("font-size", "18px");
 
 //appending little triangles, path object, as arrowhead
