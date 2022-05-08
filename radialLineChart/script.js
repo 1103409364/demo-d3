@@ -37,14 +37,14 @@ d3.json("data2.json").then((data) => {
     // .datum(data.line1)
     .data([data.line1]) //this is equivalent to datum(data.line1)
     .attr("class", "area")
-    .attr("fill", "none")
+    .attr("fill", "rgb(255 0 0 / 18%)") // 填充颜色 none表示不填充
     .attr("stroke", "red")
     .attr("d", lineRadial);
   // 线2
   var linePlot2 = g
     .append("path")
     .datum(data.line2)
-    .attr("fill", "none")
+    .attr("fill", "rgb(0 0 255 / 18%)")
     .attr("stroke", "blue")
     .attr("d", lineRadial);
 
@@ -61,7 +61,9 @@ d3.json("data2.json").then((data) => {
       // return "rotate(" + ((x(d) * 180) / Math.PI - 90) + ")translate(" + innerRadius + ",0)";
     });
 
-  xTick.append("line").attr("x2", -4).attr("stroke", "#000"); // x轴刻度
+  // xTick.append("line").attr("x2", -(outerRadius - innerRadius - 14)).attr("stroke", "#000").attr("opacity", 0.2); // x轴刻度
+  xTick.append("line").attr("x2", -4).attr("stroke", "#000").attr("opacity", 0.2); // x轴刻度
+
   xTick
     .append("rect")
     .attr("x", 2)
@@ -74,7 +76,7 @@ d3.json("data2.json").then((data) => {
     .style("font-size", 10)
     .style("display", function (d) {
       return +formatMonth(d) === 10 ? "block" : "none";
-    }); // 文字背景
+    }); // x轴文字背景
 
   xTick
     .append("text")
@@ -106,9 +108,9 @@ d3.json("data2.json").then((data) => {
 
   yAxis
     .append("circle")
-    .attr("fill", "none")
+    .attr("fill", "#fff") // 填充颜色
     .attr("stroke", "black")
-    .attr("opacity", 0.2)
+    .attr("opacity", 0.8)
     .attr("r", function () {
       return y(y.domain()[0]);
     });
@@ -122,10 +124,10 @@ d3.json("data2.json").then((data) => {
     .attr("fill", "none")
     .attr("stroke", "#fff")
     .attr("stroke-width", 5)
-    .attr("stroke-linejoin", "round");
-  // .text(function (d) {
-  //   return "$" + d;
-  // });
+    .attr("stroke-linejoin", "round")
+    .text(function (d) {
+      return d;
+    }); // y轴文字背景
 
   yTick
     .append("text")
@@ -133,9 +135,10 @@ d3.json("data2.json").then((data) => {
       return -y(d);
     })
     .attr("dy", "0.35em")
+    .style("font-size", 10)
     .text(function (d) {
-      return "" + d;
-    });
+      return d;
+    }); // y轴文字
 
   // 标题
   var title = g
@@ -147,7 +150,7 @@ d3.json("data2.json").then((data) => {
     .style("font-family", "none")
     .style("font-size", 30)
     .text("12345");
-
+  
   var subtitle = g
     .append("text")
     .attr("dy", "1.6em")
@@ -163,7 +166,7 @@ d3.json("data2.json").then((data) => {
     .attr("stroke-dashoffset", -lineLength1)
     .transition()
     .style("background-color", "red")
-    .duration(5000)
+    .duration(3000)
     .ease(d3.easeLinear)
     .attr("stroke-dashoffset", 0);
 
@@ -172,7 +175,7 @@ d3.json("data2.json").then((data) => {
     .attr("stroke-dasharray", lineLength2 + " " + lineLength2)
     .attr("stroke-dashoffset", lineLength2)
     .transition()
-    .duration(5000)
+    .duration(3000)
     .ease(d3.easeLinear)
     .attr("stroke-dashoffset", 0);
 });
