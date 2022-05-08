@@ -75,7 +75,7 @@ const svg = d3
   .append("svg")
   .attr("viewBox", [0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom])
   .append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
+// .attr("transform", `translate(${margin.left},${margin.top})`);
 
 const subgraphWidth = (width * 2) / 8;
 const subgraphHeight = (height * 1) / 5;
@@ -93,6 +93,7 @@ svg
   .text("Robot Components") // title
   .attr("text-anchor", "middle")
   .attr("x", width / 2)
+  .attr("y", 20)
   .style("font-size", "18px");
 
 //appending little triangles, path object, as arrowhead
@@ -322,7 +323,7 @@ const legend_g = svg
   .data(colorScale.domain())
   .enter()
   .append("g")
-  .attr("transform", (d, i) => `translate(${width - 20},${i * 20})`);
+  .attr("transform", (d, i) => `translate(${width},${i * 20 + 20})`);
 
 legend_g.append("circle").attr("cx", 0).attr("cy", 0).attr("r", 5).attr("fill", colorScale);
 
@@ -334,10 +335,7 @@ legend_g
   .text((d) => d);
 
 //drawing the second legend
-const legend_g2 = svg
-  .append("g")
-  //.attr("transform", (d, i) => `translate(${width},${i * 20})`);
-  .attr("transform", `translate(${width - 20}, 120)`);
+const legend_g2 = svg.append("g").attr("transform", `translate(${width}, 140)`);
 
 legend_g2
   .append("circle")
@@ -360,3 +358,9 @@ legend_g2
   .style("stroke-width", 2)
   .style("fill", "black");
 legend_g2.append("text").attr("x", 15).attr("y", 20).text("short runtime").style("font-size", "10px");
+
+// const zoom = d3.zoom().scaleExtent([-40, 40]).on("zoom", zoomed);
+// function zoomed({ transform }) {
+//   svg.attr("transform", transform);
+// }
+// svg.call(zoom);
