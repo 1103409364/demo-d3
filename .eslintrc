@@ -1,0 +1,71 @@
+{
+  // Environments - which environments your script is designed to run in.
+  // Each environment brings with it a certain set of predefined global variables.
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": ["eslint:recommended", "plugin:vue/essential"],
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
+  "plugins": ["vue", "es5"],
+  "globals": {
+    "Vue": true,
+    "FCM": true,
+    "axios": true,
+    "ELEMENT": true,
+    "i18n": true,
+    "define": true,
+    "$module": true,
+    "$rules": true,
+    "d3": true
+  },
+  "rules": {
+    "vue/comment-directive": ["off"],
+    "vue/component-name-in-template-casing": [
+      "error",
+      "kebab-case",
+      {
+        "registeredComponentsOnly": false,
+        "ignores": []
+      }
+    ], // dom 模板中组件名 kebab-case
+    "vue/name-property-casing": ["error", "PascalCase"], //组件名PascalCase
+    "vue/match-component-file-name": [
+      "error",
+      {
+        "extensions": ["vue"],
+        "shouldMatchCase": true
+      }
+    ], //要求组件name属性匹配其文件名
+    "vue/prop-name-casing": ["error", "camelCase"], //组件内 props camelCase
+    "vue/this-in-template": ["error", "never"], //不要在模版中使用this
+    // "vue/custom-event-name-casing": ["error", "kebab-case"], //自定义事件名称始终使用kebab-case(短横线命名)
+    "vue/attribute-hyphenation": [
+      "error",
+      "always",
+      {
+        "ignore": []
+      }
+    ], //标签属性名称始终使用kebab-case(短横线命名)
+    "vue/attributes-order": [
+      "error",
+      {
+        "order": [
+          "DEFINITION",
+          "LIST_RENDERING",
+          "CONDITIONALS",
+          "RENDER_MODIFIERS",
+          "GLOBAL",
+          "UNIQUE",
+          "TWO_WAY_BINDING",
+          "OTHER_DIRECTIVES",
+          "OTHER_ATTR",
+          "EVENTS",
+          "CONTENT"
+        ]
+      }
+    ] //标签属性、指令排序
+  }
+}

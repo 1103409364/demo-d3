@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>区块链态势感知</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.9/vue.min.js"></script>
+  <!--Debug version-->
+  <!-- 调试版 -->
+  <!-- <script src="https://unpkg.com/@jiaminghi/data-view/dist/datav.map.vue.js"></script> -->
+  <script src="../lib/datav.map.vue.js"></script>
+  <!--Compression version-->
+  <!-- 压缩版 -->
+  <!-- <script src="https://unpkg.com/@jiaminghi/data-view/dist/datav.min.vue.js"></script> -->
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div id="app">
+    <div id="top-header">
+      <dv-decoration-8 class="header-left-decoration"></dv-decoration-8>
+      <dv-decoration-5 class="header-center-decoration"></dv-decoration-5>
+      <dv-decoration-8 class="header-right-decoration" :reverse="true"></dv-decoration-8>
+      <div class="center-title">区块链态势感知</div>
+    </div>
+    <div class="main-content">
+      <div class="main-top">
+        <div class="main-top-left">
+          <div class="dc-left">
+            <dv-border-box-5>
+              <div class="value-wrap">
+                <div><span class="main-value">5465</span>件</div>
+                <div class="compare-value"><span>比上月同期</span>
+                  <span class="percent">81% </span>
+                  <img class="icon" src="./up.svg" alt="up">
+                </div>
+              </div>
+              <!-- <div class="compare-value"><span>环比</span>15</div> -->
+            </dv-border-box-5>
+            <div class="dc-text">
+              当周安全事件
+              <dv-decoration-3 style="width:200px;height:20px;"></dv-decoration-3>
+            </div>
+          </div>
+          <div class="dc-right">
+            <div class="dc-text">
+              当月安全事件
+              <dv-decoration-3 style="width:200px;height:20px;"></dv-decoration-3>
+            </div>
+            <dv-border-box-5 :reverse="true">
+              <div class="value-wrap">
+                <div><span class="main-value">1212</span>件</div>
+                <div class="compare-value"><span>比上周同期</span>
+                  <span class="percent">66% </span>
+                  <img class="icon" src="./down.svg" alt="up">
+                </div>
+              </div>
+              <!-- <div class="compare-value"><span>环比</span>9</div> -->
+            </dv-border-box-5>
+          </div>
+        </div>
+        <div class="main-top-right">
+          <!-- <div class="chart-name">
+            按日统计折线图
+            <dv-decoration-3 style="width:200px;height:20px;"></dv-decoration-3>
+          </div>
+          <dv-charts class="top-charts" :option="option"></dv-charts> -->
+          <dv-border-box-1>
+            <div class="main-top-title">
+              安全事件
+            </div>
+            <div class="count-wrap">
+              <dv-decoration-12 class="main-top-decorate" :style="{width:diameter+'px',height:diameter+'px',}" />
+              <div class="main-top-count">
+                <div class="card">2</div>
+                <div class="card">1</div>
+                <div class="card">3</div>
+                <div class="card">7</div>
+              </div>
+            </div>
+          </dv-border-box-1>
+        </div>
+      </div>
+      <div class="main-bottom">
+        <div class="chart-name">
+          <dv-decoration-6 style="width:300px;height:30px;"></dv-decoration-6>
+          <span>按日统计折线图</span>
+          <dv-decoration-6 style="width:300px;height:30px;"></dv-decoration-6>
+        </div>
+        <dv-charts class="top-charts" :option="option"></dv-charts>
+      </div>
+    </div>
+  </div>
+  <script src="./script.js"></script>
+
+</body>
+
+</html>
