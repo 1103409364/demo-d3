@@ -115,12 +115,12 @@ function render(dataset) {
     .force("charge", d3.forceManyBody().strength(-500)) // This adds repulsion (if it's negative) between nodes.
     .force("center", d3.forceCenter(width / 2, height / 2 + 10)); // 调整在画布中的位置 This force attracts nodes to the center of the svg area
 
-  const svg = d3.select("#force-graph").append('svg').attr("viewBox", [0, 0, width, height]);
+  const svg = d3.select("#force-graph").append("svg").attr("viewBox", [0, 0, width, height]);
   // 分组 g1 画主要的图形，g2 画辅助的图形，分组后便与做放大平移等
   const g1 = svg.append("g").attr("cursor", "grab");
   const g2 = svg.append("g");
 
-  const zoom = d3.zoom().scaleExtent([-20, 20]).on("zoom", zoomed) // 取消双击放大;
+  const zoom = d3.zoom().scaleExtent([-20, 20]).on("zoom", zoomed); // 取消双击放大;
   function zoomed({ transform }) {
     g1.attr("transform", transform);
   }
@@ -130,10 +130,8 @@ function render(dataset) {
   const subgraphWidth = (width * 2) / 8;
   const subgraphHeight = (height * 1) / 5;
 
-  const subgraph = svg
-    .append("g")
-    .attr("id", "subgraph")
-    // .attr("transform", `translate(${width - subgraphWidth - 20}, 0)`);
+  const subgraph = svg.append("g").attr("id", "subgraph");
+  // .attr("transform", `translate(${width - subgraphWidth - 20}, 0)`);
 
   subgraph.append("text").attr("y", 15).style("font-size", "16px"); //  选中的组件名称
 
@@ -267,7 +265,7 @@ function render(dataset) {
     var id = dataset.nodes[i].id;
     neighborTarget[id] = dataset.links
       .filter(function (d) {
-        return d.source == id;
+        return d.source == id; // source
       })
       .map(function (d) {
         return d.target;
@@ -280,54 +278,91 @@ function render(dataset) {
     var id = dataset.nodes[i].id;
     neighborSource[id] = dataset.links
       .filter(function (d) {
-        return d.target == id;
+        return d.target == id; // target
       })
       .map(function (d) {
         return d.source;
       });
   }
+
   console.log("neighborSource is ", neighborSource);
-  // 点击选中节点
-  node.selectAll("circle").on("click", function (e, d) {
-    var active = d.active ? false : true, // toggle whether node is active
-      newStroke = active ? "yellow" : "grey",
-      newStrokeIn = active ? "green" : "grey",
-      newStrokeOut = active ? "red" : "grey",
-      newOpacity = active ? 0.6 : 0.3,
-      subgraphOpacity = active ? 0.9 : 0;
-    // 选中节点详情
-    subgraph
-      .selectAll("text")
-      .text("Selected: " + d.label)
-      .attr("dy", 14)
-      .attr("dx", 14);
 
-    //extract node's id and ids of its neighbors
-    var id = d.id,
-      neighborS = neighborSource[id],
-      neighborT = neighborTarget[id];
-    console.log("neighbors is from ", neighborS, " to ", neighborT);
-    d3.selectAll("#circle" + id).style("stroke-opacity", newOpacity);
-    d3.selectAll("#circle" + id).style("stroke", newStroke);
+  // 非邻居字典
+  // var nonNeighbor = {};
+  // for (var i = 0; i < dataset.nodes.length; i++) {
+  //   var id = dataset.nodes[i].id;
+  //   nonNeighbor[id] = dataset.nodes
+  //     .filter(
+  //       (d) => !neighborSource[id].includes(d.id) && !neighborTarget[id].includes(d.id) && d.id != id
+  //     )
+  //     .map((d) => d.id);
+  // }
+  // console.log("nonNeighbor is ", nonNeighbor);
 
-    d3.selectAll("#subgraph").style("opacity", subgraphOpacity);
+  // 节点事件：点击高亮，鼠标悬浮隐藏非邻居节点，鼠标离开显示所有节点
+  node
+    .selectAll("circle")
+    .on("click", function (e, d) {
+      var active = d.active ? false : true, // toggle whether node is active
+        newStroke = active ? "yellow" : "grey",
+        newStrokeIn = active ? "green" : "grey",
+        newStrokeOut = active ? "red" : "grey",
+        newOpacity = active ? 0.6 : 0.3,
+        subgraphOpacity = active ? 0.9 : 0;
+      // 选中节点详情
+      subgraph
+        .selectAll("text")
+        .text("Selected: " + d.label)
+        .attr("dy", 14)
+        .attr("dx", 14);
 
-    //highlight the current node and its neighbors
-    for (var i = 0; i < neighborS.length; i++) {
-      d3.selectAll("#line" + neighborS[i] + id).style("stroke", newStrokeIn);
-      d3.selectAll("#circle" + neighborS[i])
-        .style("stroke-opacity", newOpacity)
-        .style("stroke", newStrokeIn);
-    }
-    for (var i = 0; i < neighborT.length; i++) {
-      d3.selectAll("#line" + id + neighborT[i]).style("stroke", newStrokeOut);
-      d3.selectAll("#circle" + neighborT[i])
-        .style("stroke-opacity", newOpacity)
-        .style("stroke", newStrokeOut);
-    }
-    //update whether or not the node is active
-    d.active = active;
-  });
+      //extract node's id and ids of its neighbors
+      var id = d.id,
+        neighborS = neighborSource[id],
+        neighborT = neighborTarget[id];
+      console.log("neighbors is from ", neighborS, " to ", neighborT);
+      g1.selectAll("#circle" + id).style("stroke-opacity", newOpacity);
+      g1.selectAll("#circle" + id).style("stroke", newStroke);
+      g1.selectAll("#subgraph").style("opacity", subgraphOpacity);
+      //highlight the current node and its neighbors
+      for (var i = 0; i < neighborS.length; i++) {
+        g1.selectAll("#line" + neighborS[i] + id).style("stroke", newStrokeIn);
+        g1.selectAll("#circle" + neighborS[i])
+          .style("stroke-opacity", newOpacity)
+          .style("stroke", newStrokeIn);
+      }
+      for (var i = 0; i < neighborT.length; i++) {
+        g1.selectAll("#line" + id + neighborT[i]).style("stroke", newStrokeOut);
+        g1.selectAll("#circle" + neighborT[i])
+          .style("stroke-opacity", newOpacity)
+          .style("stroke", newStrokeOut);
+      }
+      //update whether or not the node is active
+      d.active = active;
+    })
+    .on("mouseover", function (e, d) {
+      g1.selectAll("circle").style("opacity", 0.2);
+      g1.selectAll("line").style("opacity", 0.2);
+      var id = d.id,
+        neighborS = neighborSource[id],
+        neighborT = neighborTarget[id];
+
+      //highlight the current node and its neighbors
+      g1.selectAll("#circle" + id).style("opacity", 1);
+
+      for (var i = 0; i < neighborS.length; i++) {
+        g1.selectAll("#line" + neighborS[i] + id).style("opacity", 1);
+        g1.selectAll("#circle" + neighborS[i]).style("opacity", 1);
+      }
+      for (var i = 0; i < neighborT.length; i++) {
+        g1.selectAll("#circle" + neighborT[i]).style("opacity", 1);
+        g1.selectAll("#line" + id + neighborT[i]).style("opacity", 0.5);
+      }
+    })
+    .on("mouseout", function (e, d) {
+      g1.selectAll("circle").style("opacity", 1);
+      g1.selectAll("line").style("opacity", 0.5);
+    });
 
   //Listen for tick events to render the nodes as they update in your Canvas or SVG.
   simulation.nodes(dataset.nodes).on("tick", ticked);
@@ -409,7 +444,7 @@ function render(dataset) {
 }
 
 render(dataset);
-
+// TODO:搜索节点高亮，聚焦
 // 重绘
 // setTimeout(() => {
 //   d3.select("#force-graph").selectAll("*").remove(); //清空SVG中的内容
