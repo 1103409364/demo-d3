@@ -133,7 +133,7 @@ function render(dataset) {
   const subgraph = svg
     .append("g")
     .attr("id", "subgraph")
-    .attr("transform", `translate(${width - subgraphWidth - 20}, 0)`);
+    // .attr("transform", `translate(${width - subgraphWidth - 20}, 0)`);
 
   subgraph.append("text").attr("y", 15).style("font-size", "16px"); //  选中的组件名称
 
