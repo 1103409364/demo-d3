@@ -115,17 +115,17 @@ function render(dataset) {
     .force("charge", d3.forceManyBody().strength(-500)) // This adds repulsion (if it's negative) between nodes.
     .force("center", d3.forceCenter(width / 2, height / 2 + 10)); // 调整在画布中的位置 This force attracts nodes to the center of the svg area
 
-  const svg = d3.select("#force-graph").attr("viewBox", [0, 0, width, height]);
+  const svg = d3.select("#force-graph").append('svg').attr("viewBox", [0, 0, width, height]);
   // 分组 g1 画主要的图形，g2 画辅助的图形，分组后便与做放大平移等
   const g1 = svg.append("g").attr("cursor", "grab");
   const g2 = svg.append("g");
 
-  const zoom = d3.zoom().scaleExtent([-20, 20]).on("zoom", zoomed);
+  const zoom = d3.zoom().scaleExtent([-20, 20]).on("zoom", zoomed) // 取消双击放大;
   function zoomed({ transform }) {
     g1.attr("transform", transform);
   }
 
-  svg.call(zoom);
+  svg.call(zoom).on("dblclick.zoom", null);
 
   const subgraphWidth = (width * 2) / 8;
   const subgraphHeight = (height * 1) / 5;
