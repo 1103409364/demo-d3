@@ -3,6 +3,8 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Title</title>
   <style>
     .link-active {
@@ -16,12 +18,13 @@
 <body>
   <div style="border:1px solid #000;position: relative;">
     <svg width="960" height="500"></svg>
-    <div
-      style="width:100px;height:100px;border:1px solid red;position:absolute;top:2px;right:2px;background-color: azure;">
+    <div style="width:100px;height:100px;border:1px solid red;position:absolute;top:2px;right:2px;background-color: azure;">
       <span id="xxx"></span>
     </div>
   </div>
 </body>
+<!-- https://blog.csdn.net/FalcoLiu/article/details/112280215 -->
+<!-- 点击展开 -->
 <script type="text/javascript">
 
   let marge = { top: 60, bottom: 60, left: 60, right: 60 }
@@ -70,12 +73,12 @@
   })
   // 生成 nodes map
   let nodesMap = genNodesMap(nodes);
-  console.log('3333',nodesMap)
+  console.log('3333', nodesMap)
   nodesData = d3.values(nodesMap)
   let linkMap = genLinkMap(tempEdges)
   // 构建 links（source 属性必须从 0 开始）
   edges = genLinks(tempEdges);
-  console.log('123123',edges,nodesData)
+  console.log('123123', edges, nodesData)
   // 设置一个颜色比例尺
   let colorScale = d3.scaleOrdinal()
     .domain(d3.range(nodesData.length))
