@@ -11,14 +11,6 @@
   },
   "plugins": ["vue", "es5"],
   "globals": {
-    "Vue": true,
-    "FCM": true,
-    "axios": true,
-    "ELEMENT": true,
-    "i18n": true,
-    "define": true,
-    "$module": true,
-    "$rules": true,
     "d3": true
   },
   "rules": {

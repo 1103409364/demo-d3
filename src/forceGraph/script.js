@@ -115,7 +115,17 @@ function render(dataset) {
     .force("charge", d3.forceManyBody().strength(-500)) // This adds repulsion (if it's negative) between nodes.
     .force("center", d3.forceCenter(width / 2, height / 2 + 10)); // 调整在画布中的位置 This force attracts nodes to the center of the svg area
 
-  const svg = d3.select("#force-graph").append("svg").attr("viewBox", [0, 0, width, height]).append("g");
+  const svg = d3.select("#force-graph").attr("viewBox", [0, 0, width, height]);
+  // 分组 g1 画主要的图形，g2 画辅助的图形，分组后便与做放大平移等
+  const g1 = svg.append("g").attr("cursor", "grab");
+  const g2 = svg.append("g");
+
+  const zoom = d3.zoom().scaleExtent([-20, 20]).on("zoom", zoomed);
+  function zoomed({ transform }) {
+    g1.attr("transform", transform);
+  }
+
+  svg.call(zoom);
 
   const subgraphWidth = (width * 2) / 8;
   const subgraphHeight = (height * 1) / 5;
@@ -128,8 +138,7 @@ function render(dataset) {
   subgraph.append("text").attr("y", 15).style("font-size", "16px"); //  选中的组件名称
 
   // 标题：机器人组件 灰色边框表示运行时长
-  svg
-    .append("text")
+  g2.append("text")
     .text("Robot Components") // title
     .attr("text-anchor", "middle")
     .attr("x", width / 2)
@@ -140,8 +149,7 @@ function render(dataset) {
   //The <defs> element is used to store graphical objects that will be used at a later time
   //The <marker> element defines the graphic that is to be used for drawing arrowheads or polymarkers on a given <path>, <line>, <polyline> or <polygon> element.
   // 箭头
-  svg
-    .append("defs")
+  g1.append("defs")
     .append("marker")
     .attr("id", "arrowhead")
     .attr("viewBox", "-0 -5 10 10") //the bound of the SVG viewport for the current SVG fragment. defines a coordinate system 10 wide and 10 high starting on (0,-5)
@@ -159,7 +167,7 @@ function render(dataset) {
   // console.log("dataset is ...", dataset);
 
   // Initialize the links 连接线
-  const link = svg
+  const link = g1
     .selectAll(".links")
     .data(dataset.links)
     .enter()
@@ -177,7 +185,7 @@ function render(dataset) {
   link.append("title").text((d) => d.type);
 
   // 连线的文字
-  const edgepaths = svg
+  const edgepaths = g1
     .selectAll(".edgepath") //make path go along with the link provide position for link labels
     .data(dataset.links)
     .enter()
@@ -190,7 +198,7 @@ function render(dataset) {
     })
     .style("pointer-events", "none");
 
-  const edgelabels = svg
+  const edgelabels = g1
     .selectAll(".edgelabel")
     .data(dataset.links)
     .enter()
@@ -215,7 +223,7 @@ function render(dataset) {
     .text((d) => d.type);
 
   // Initialize the nodes
-  const node = svg.selectAll(".nodes").data(dataset.nodes).enter().append("g").attr("class", "nodes");
+  const node = g1.selectAll(".nodes").data(dataset.nodes).enter().append("g").attr("class", "nodes");
 
   node.call(
     d3
@@ -358,7 +366,7 @@ function render(dataset) {
   }
 
   //绘制 legend
-  const legend_g = svg
+  const legend_g = g2
     .selectAll(".legend")
     .data(colorScale.domain())
     .enter()
@@ -375,7 +383,7 @@ function render(dataset) {
     .text((d) => d);
 
   //drawing the second legend
-  const legend_g2 = svg.append("g").attr("transform", `translate(${width - 80}, 140)`);
+  const legend_g2 = g2.append("g").attr("transform", `translate(${width - 80}, 140)`);
 
   legend_g2
     .append("circle")
@@ -401,14 +409,9 @@ function render(dataset) {
 }
 
 render(dataset);
-// const zoom = d3.zoom().scaleExtent([-20, 20]).on("zoom", zoomed);
-// function zoomed({ transform }) {
-//   svg.attr("transform", transform);
-// }
-// svg.call(zoom);
 
 // 重绘
-setTimeout(() => {
-  d3.select("#force-graph").selectAll("*").remove(); //清空SVG中的内容
-  render(dataset2);
-}, 3000);
+// setTimeout(() => {
+//   d3.select("#force-graph").selectAll("*").remove(); //清空SVG中的内容
+//   render(dataset2);
+// }, 3000);
