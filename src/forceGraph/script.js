@@ -54,6 +54,7 @@ function render(dataset) {
   const width = 890;
   const height = 500;
   const nodeRadius = 17;
+  const lineOpacity = 0.5;
 
   const colorScale = d3
     .scaleOrdinal() //=d3.scaleOrdinal(d3.schemeSet2)
@@ -130,7 +131,7 @@ function render(dataset) {
     .attr("class", "links")
     .attr("stroke", "#999")
     .attr("stroke-width", "2px")
-    .style("opacity", 0.5)
+    .style("opacity", lineOpacity)
     .attr("id", (d) => "line" + d.source + d.target)
     .attr("class", "links")
     .attr("marker-end", "url(#arrowhead)"); //The marker-end attribute defines the arrowhead or polymarker that will be drawn at the final vertex of the given shape.
@@ -313,12 +314,12 @@ function render(dataset) {
       }
       for (var i = 0; i < neighborT.length; i++) {
         g1.selectAll("#circle" + neighborT[i]).style("opacity", 1);
-        g1.selectAll("#line" + id + neighborT[i]).style("opacity", 0.5);
+        g1.selectAll("#line" + id + neighborT[i]).style("opacity", 1);
       }
     })
     .on("mouseout", function (e, d) {
       g1.selectAll("circle").style("opacity", 1);
-      g1.selectAll("line").style("opacity", 0.5);
+      g1.selectAll("line").style("opacity", lineOpacity);
     });
 
   //Listen for tick events to render the nodes as they update in your Canvas or SVG.
