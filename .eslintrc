@@ -9,7 +9,7 @@
   "parserOptions": {
     "ecmaVersion": "latest"
   },
-  "plugins": ["vue", "es5"],
+  "plugins": ["prettier"],
   "globals": {
     "d3": true
   },
