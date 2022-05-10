@@ -23,12 +23,57 @@
       width: 60%;
       border: 1px solid #ccc;
     }
+
+    body {
+      font: 10px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+    .x.axis path {
+      display: none;
+    }
+
+    .line {
+      fill: none;
+      stroke: steelblue;
+      stroke-width: 1.5px;
+    }
+
+    .overlay {
+      fill: none;
+      pointer-events: all;
+    }
+
+    .focus circle {
+      fill: steelblue;
+    }
+
+    .focus text {
+      font-size: 14px;
+    }
+
+    .tooltip {
+      fill: white;
+      stroke: #000;
+    }
+
+    .tooltip-date,
+    .tooltip-likes {
+      font-weight: bold;
+    }
   </style>
 </head>
+<!-- https://bl.ocks.org/tlfrd/fd6991b2d1947a3cb9e0bd20053899d6 -->
 
 <body>
   <div id="line-chart"></div>
-  <script src="./script3.js"></script>
+  <script src="./script22.js"></script>
 </body>
 
 </html>
