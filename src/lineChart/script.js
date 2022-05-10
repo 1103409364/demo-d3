@@ -55,7 +55,15 @@ const data2 = [
   { date: "2022-5-29", value: "110" },
 ];
 
-// data02.forEach((item) => ((item.date = new Date(item.date)), (item.value = +item.value)));
+var parseTime = d3.timeParse("%Y-%m-%d");
+data1.forEach(function (d) {
+  d.date = parseTime(d.date);
+  d.value = +d.value;
+});
+data2.forEach(function (d) {
+  d.date = parseTime(d.date);
+  d.value = +d.value;
+});
 
 // set the dimensions and margins of the graph
 var margin = { top: 20, right: 66, bottom: 30, left: 40 },
@@ -66,25 +74,10 @@ const line2Color = "#3881FF";
 // const tooltipWidth = 124;
 const tooltipHeight = 32;
 // parse the date / time
-var parseTime = d3.timeParse("%Y-%m-%d");
 var bisectDate = d3.bisector(function (d) {
   return d.date;
 }).left;
-
 // set the ranges
-var x = d3.scaleTime().range([0, width]);
-var y = d3.scaleLinear().range([height, 0]);
-
-// define the line
-var line = d3
-  .line()
-  .x(function (d) {
-    return x(d.date);
-  })
-  .y(function (d) {
-    return y(d.value);
-  });
-
 var svg = d3
   .select("#line-chart")
   .append("svg")
@@ -93,18 +86,9 @@ var svg = d3
   .attr("viewBox", [0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom])
   .append("g")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-var line1G = svg.append("g");
-var line2G = svg.append("g");
-
-data1.forEach(function (d) {
-  d.date = parseTime(d.date);
-  d.value = +d.value;
-});
-data2.forEach(function (d) {
-  d.date = parseTime(d.date);
-  d.value = +d.value;
-});
+// 准备坐标轴 set the ranges
+var x = d3.scaleTime().range([0, width]);
+var y = d3.scaleLinear().range([height, 0]);
 // Scale the range of the data
 x.domain(
   d3.extent(data1, function (d) {
@@ -117,6 +101,38 @@ y.domain([
     return d.value;
   }),
 ]);
+// Add the X Axis
+var xAxis = svg
+  .append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .attr("class", "x-axis")
+  .call(
+    d3
+      .axisBottom(x)
+      .ticks(width / 80)
+      .tickFormat(d3.timeFormat("%m/%d"))
+      .tickSizeOuter(0)
+  );
+xAxis.attr("class", "line-axis"); // 设置 class 修改颜色等样式
+// Add the Y Axis
+var yAxis = svg
+  .append("g")
+  .call(d3.axisLeft(y))
+  .call((g) => g.select(".domain").remove()); // 移除 y 轴
+yAxis.attr("class", "line-axis"); // 设置 class 修改颜色等样式
+
+// define the line
+var line = d3
+  .line()
+  .x(function (d) {
+    return x(d.date);
+  })
+  .y(function (d) {
+    return y(d.value);
+  });
+
+var line1G = svg.append("g");
+var line2G = svg.append("g");
 
 // 渐变
 var areaGradient1 = svg
@@ -127,7 +143,11 @@ var areaGradient1 = svg
   .attr("y1", "0%")
   .attr("x2", "0%")
   .attr("y2", "100%");
-areaGradient1.append("stop").attr("offset", "0%").attr("stop-color", line1Color).attr("stop-opacity", 0.3);
+areaGradient1
+  .append("stop")
+  .attr("offset", "0%")
+  .attr("stop-color", line1Color)
+  .attr("stop-opacity", 0.3);
 areaGradient1.append("stop").attr("offset", "80%").attr("stop-color", "#fff").attr("stop-opacity", 0);
 svg
   .append("path")
@@ -154,7 +174,11 @@ var areaGradient2 = svg
   .attr("y1", "0%")
   .attr("x2", "0%")
   .attr("y2", "100%");
-areaGradient2.append("stop").attr("offset", "0%").attr("stop-color", line2Color).attr("stop-opacity", 0.3);
+areaGradient2
+  .append("stop")
+  .attr("offset", "0%")
+  .attr("stop-color", line2Color)
+  .attr("stop-opacity", 0.3);
 areaGradient2.append("stop").attr("offset", "80%").attr("stop-color", "#fff").attr("stop-opacity", 0);
 svg
   .append("path")
@@ -192,24 +216,6 @@ line2G
   .attr("stroke-linecap", "round")
   .attr("class", "line")
   .attr("d", line);
-
-// Add the X Axis
-svg
-  .append("g")
-  .attr("transform", "translate(0," + height + ")")
-  .call(
-    d3
-      .axisBottom(x)
-      .ticks(width / 80)
-      .tickFormat(d3.timeFormat("%m/%d"))
-      .tickSizeOuter(0)
-  );
-
-// Add the Y Axis
-svg
-  .append("g")
-  .call(d3.axisLeft(y))
-  .call((g) => g.select(".domain").remove()); // 移除 y 轴
 
 // add tooltip
 var tooltipG = svg.append("g").style("display", "none");
@@ -339,4 +345,3 @@ legend
   .attr("fill", "#8F9BB3")
   .style("font-size", "0.65em")
   .text((d) => d);
-
