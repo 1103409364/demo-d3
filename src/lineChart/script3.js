@@ -62,6 +62,7 @@ var margin = { top: 20, right: 20, bottom: 30, left: 50 },
   width = 800 - margin.left - margin.right,
   height = 300 - margin.top - margin.bottom;
 const line1Color = "#FFB300";
+const line2Color = "#3881FF";
 const tooltipWidth = 124;
 const tooltipHeight = 32;
 // parse the date / time
@@ -139,7 +140,7 @@ line2
   .append("path")
   .data([data2])
   .attr("fill", "none")
-  .attr("stroke", line1Color)
+  .attr("stroke", line2Color)
   .attr("stroke-linejoin", "round")
   .attr("stroke-linecap", "round")
   .attr("class", "line")
@@ -164,39 +165,52 @@ svg
   .call((g) => g.select(".domain").remove()); // 移除 y 轴
 
 // add tooltip
-function addToolTip() {
-  var tooltipG = svg.append("g").style("display", "none");
+var tooltipG = svg.append("g").style("display", "none");
 
-  tooltipG
-    .append("circle")
-    .attr("class", "tooltip1")
-    .style("fill", "#fff")
-    .style("stroke", line1Color)
-    .style("stroke-width", 2)
-    .attr("r", 4);
+tooltipG
+  .append("circle")
+  .attr("class", "tooltip1")
+  .style("fill", "#fff")
+  .style("stroke", line1Color)
+  .style("stroke-width", 2)
+  .attr("r", 4);
+tooltipG
+  .append("circle")
+  .attr("class", "tooltip2")
+  .style("fill", "#fff")
+  .style("stroke", line2Color)
+  .style("stroke-width", 2)
+  .attr("r", 4);
 
-  tooltipG
-    .append("rect")
-    .attr("class", "tooltip1")
-    .attr("rx", "3") // 圆角
-    .attr("ry", "3") // 圆角
-    .style("fill", "#fff")
-    .style("filter", "drop-shadow(0 0 5px rgba(3, 3, 3, 0.15))")
-    .attr("width", tooltipWidth)
-    .attr("height", tooltipHeight);
-  tooltipG
-    .append("text")
-    .attr("class", "tooltip1")
-    .attr("dy", "0.4em")
-    .attr("dx", "2em")
-    .style("font-family", "Arial")
-    .style("font-size", "12px")
-    .style("fill", "#333333")
-    .text("安全事件");
-  return tooltipG;
-}
-var tooltipG1 =  addToolTip();
-var tooltipG2 =  addToolTip();
+// tooltipG
+//   .append("rect")
+//   .attr("class", "tooltip1")
+//   .attr("rx", "3") // 圆角
+//   .attr("ry", "3") // 圆角
+//   .style("fill", "#fff")
+//   .style("filter", "drop-shadow(0 0 5px rgba(3, 3, 3, 0.15))")
+//   .attr("width", tooltipWidth)
+//   .attr("height", tooltipHeight);
+tooltipG
+  .append("text")
+  .attr("class", "tooltip1")
+  .attr("dy", "0.4em")
+  // .attr('text-anchor', 'middle')
+  .attr("dx", "1em")
+  .style("font-family", "Arial")
+  // .style('text-shadow','1px 1px 1px #333')
+  .style("font-size", "12px")
+  .style("fill", "#333");
+// .text("安全事件");
+tooltipG
+  .append("text")
+  .attr("class", "tooltip2")
+  .attr("dy", "0.4em")
+  .attr("dx", "1em")
+  .style("font-family", "Arial")
+  .style("font-size", "12px")
+  .style("fill", "#333");
+// .text("安全风险");
 // append the rectangle to capture mouse
 svg
   .append("rect")
@@ -205,39 +219,47 @@ svg
   .style("fill", "none")
   .style("pointer-events", "all")
   .on("mouseover", function () {
-    tooltipG1.style("display", null);
-    tooltipG2.style("display", null);
+    tooltipG.style("display", null);
   })
   .on("mouseout", function () {
-    tooltipG1.style("display", "none");
-    tooltipG2.style("display", "none");
+    tooltipG.style("display", "none");
   })
   .on("mousemove", mousemove);
 
 function mousemove(event) {
-  showTooltip(event, tooltipG1, data1);
-  showTooltip(event, tooltipG2, data2);
-}
-
-function showTooltip(event, tooltipG, data) {
   var x0 = x.invert(d3.pointer(event, this)[0]),
-    i = bisectDate(data, x0, 1),
-    d0 = data[i - 1],
-    d1 = data[i];
-  if (!d0 || !d1) return;
-  var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+    line1i = bisectDate(data1, x0, 1),
+    line2i = bisectDate(data2, x0, 1),
+    line1d0 = data1[line1i - 1],
+    line1d1 = data1[line1i],
+    line2d0 = data2[line2i - 1],
+    line2d1 = data2[line2i];
+  var d1 = {};
+  var d2 = {};
+  if (line1d0 && line1d1) {
+    d1 = x0 - line1d0.date > line1d1.date - x0 ? line1d1 : line1d0;
+  }
+  if (line2d0 && line2d1) {
+    d2 = x0 - line2d0.date > line2d1.date - x0 ? line2d1 : line2d0;
+  }
   // console.log(d);
   tooltipG
     .select("circle.tooltip1")
-    .attr("transform", "translate(" + x(d.date) + "," + y(d.value) + ")");
-  // tooltipG.text("安全事件：" + d.value);
+    .attr("transform", "translate(" + x(d1.date) + "," + y(d1.value) + ")");
+  tooltipG
+    .select("circle.tooltip2")
+    .attr("transform", "translate(" + x(d2.date) + "," + y(d2.value) + ")");
   tooltipG
     .select("text.tooltip1")
-    .text("安全事件：" + d.value)
-    .attr("transform", "translate(" + x(d.date) + "," + y(d.value) + ")");
+    .text(d1.value) // "安全事件：" +
+    .attr("transform", "translate(" + x(d1.date) + "," + y(d1.value) + ")");
+  tooltipG
+    .select("text.tooltip2")
+    .text(d2.value) // "安全风险：" +
+    .attr("transform", "translate(" + x(d1.date) + "," + y(d2.value) + ")");
   tooltipG
     .select("rect.tooltip1")
-    .attr("transform", "translate(" + x(d.date) + "," + y(d.value) + ")")
+    .attr("transform", "translate(" + x(d1.date) + "," + y(d1.value) + ")")
     .attr("x", 8)
     .attr("y", -tooltipHeight / 2);
 }
