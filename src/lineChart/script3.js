@@ -38,7 +38,9 @@ const data = [
 var margin = { top: 20, right: 20, bottom: 30, left: 50 },
   width = 800 - margin.left - margin.right,
   height = 300 - margin.top - margin.bottom;
-
+const line1Color = "#FFB300";
+const tooltipWidth = 124;
+const tooltipHeight = 32;
 // parse the date / time
 var parseTime = d3.timeParse("%d-%b-%y");
 var bisectDate = d3.bisector(function (d) {
@@ -73,8 +75,6 @@ var svg = d3
 
 var lineSvg = svg.append("g");
 
-var focus = svg.append("g").style("display", "none");
-
 // Get the data
 // d3.csv("atad.csv").then(function (data) {
 // format the data
@@ -98,7 +98,15 @@ y.domain([
 ]);
 
 // Add the valueline path.
-lineSvg.append("path").data([data]).attr("class", "line").attr("d", valueline);
+lineSvg
+  .append("path")
+  .data([data])
+  .attr("fill", "none")
+  .attr("stroke", line1Color)
+  .attr("stroke-linejoin", "round")
+  .attr("stroke-linecap", "round")
+  .attr("class", "line")
+  .attr("d", valueline);
 
 // Add the X Axis
 svg
@@ -118,9 +126,35 @@ svg
   .call(d3.axisLeft(y))
   .call((g) => g.select(".domain").remove()); // 移除 y 轴
 
-// append the circle at the intersection
-focus.append("circle").attr("class", "y").style("fill", "none").style("stroke", "blue").attr("r", 4);
+// filters go in defs element
+var defs = svg.append("defs");
+var filter = defs.append("filter").attr("id", "drop-shadow").attr("height", "130%");
+// add tooltip
+var tooltipG = svg.append("g").style("display", "none");
 
+tooltipG
+  .append("circle")
+  .attr("class", "tooltip1")
+  .style("fill", "#fff")
+  .style("stroke", line1Color)
+  .style("stroke-width", 2)
+  .attr("r", 4);
+
+tooltipG
+  .append("rect")
+  .attr("class", "tooltip1")
+  .style("fill", "#fff")
+  .style("stroke", "red")
+  .attr("width", tooltipWidth)
+  .attr("height", tooltipHeight);
+tooltipG
+  .append("text")
+  .attr("class", "tooltip1")
+  .style("font-weight", 400)
+  .style("font-family", "Arial")
+  .style("font-size", "12px")
+  .style("fill", "red")
+  .text("安全事件");
 // append the rectangle to capture mouse
 svg
   .append("rect")
@@ -129,20 +163,46 @@ svg
   .style("fill", "none")
   .style("pointer-events", "all")
   .on("mouseover", function () {
-    focus.style("display", null);
+    tooltipG.style("display", null);
+    // tooltipG.style("display", null);
+    // tooltipG.style("display", null);
   })
   .on("mouseout", function () {
-    focus.style("display", "none");
+    tooltipG.style("display", "none");
+    // tooltipText.style("display", "none");
+    // tooltip.style("display", "none");
   })
   .on("mousemove", mousemove);
 
-function mousemove() {
+function mousemove(event) {
   var x0 = x.invert(d3.pointer(event, this)[0]),
     i = bisectDate(data, x0, 1),
     d0 = data[i - 1],
-    d1 = data[i],
-    d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+    d1 = data[i];
+  if (!d0 || !d1) return;
+  var d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+  // console.log(d);
+  tooltipG
+    .select("circle.tooltip1")
+    .attr("transform", "translate(" + x(d.date) + "," + y(d.value) + ")");
+  // tooltipG.text("安全事件：" + d.value);
+  tooltipG
+    .select("text.tooltip1")
+    .text("安全事件：" + d.value)
+    .attr("transform", "translate(" + x(d.date) + "," + y(d.value) + ")");
+  // html定位有问题
+  // div.html(d.value);
+  // div.transition().duration(200).style("opacity", 0.9);
+  // console.log(x(d.date), y(d.value));
+  // div
+  //   .html(d.value)
+  //   .style("left",
+  //   .style("top", y(d.value) + "px");x(d.date) + "px")
 
-  focus.select("circle.y").attr("transform", "translate(" + x(d.date) + "," + y(d.value) + ")");
+  tooltipG
+    .select("rect.tooltip1")
+    .attr("transform", "translate(" + x(d.date) + "," + y(d.value) + ")")
+    .attr("x", 8)
+    .attr("y", -tooltipHeight / 2);
 }
 // });
