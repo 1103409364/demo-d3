@@ -205,7 +205,7 @@ function draw(data) {
       .attr('height', 30)
       .attr('fill', 'none')
       .attr('stroke', '#AB92F9')
-      .attr('rx', '3')
+      .attr('rx', '3') // 圆角
       .attr('ry', '3')
       .style('font-size', 10)
       .style('display', function (d) {

@@ -9,30 +9,53 @@
 //   { date: "2021-01-08", value: 165 },
 //   { date: "2021-01-09", value: 14 },
 // ];
-const data = [
-  { date: "3-Apr-12", value: "601" },
-  { date: "4-Apr-12", value: "502" },
-  { date: "5-Apr-12", value: "100" },
-  { date: "9-Apr-12", value: "666" },
-  { date: "10-Apr-12", value: "622" },
-  { date: "11-Apr-12", value: "626" },
-  { date: "12-Apr-12", value: "622" },
-  { date: "13-Apr-12", value: "605" },
-  { date: "16-Apr-12", value: "580" },
-  { date: "17-Apr-12", value: "543" },
-  { date: "18-Apr-12", value: "443" },
-  { date: "19-Apr-12", value: "345" },
-  { date: "20-Apr-12", value: "234" },
-  { date: "23-Apr-12", value: "166" },
-  { date: "24-Apr-12", value: "130" },
-  { date: "25-Apr-12", value: "99" },
-  { date: "26-Apr-12", value: "89" },
-  { date: "27-Apr-12", value: "67" },
-  { date: "30-Apr-12", value: "53" },
-  { date: "1-May-12", value: "10" },
+const data1 = [
+  { date: "2022-5-10", value: "601" },
+  { date: "2022-5-11", value: "502" },
+  { date: "2022-5-12", value: "100" },
+  { date: "2022-5-13", value: "666" },
+  { date: "2022-5-14", value: "622" },
+  { date: "2022-5-15", value: "626" },
+  { date: "2022-5-16", value: "622" },
+  { date: "2022-5-17", value: "605" },
+  { date: "2022-5-18", value: "580" },
+  { date: "2022-5-19", value: "543" },
+  { date: "2022-5-20", value: "443" },
+  { date: "2022-5-21", value: "345" },
+  { date: "2022-5-22", value: "234" },
+  { date: "2022-5-23", value: "166" },
+  { date: "2022-5-24", value: "130" },
+  { date: "2022-5-25", value: "99" },
+  { date: "2022-5-26", value: "89" },
+  { date: "2022-5-27", value: "67" },
+  { date: "2022-5-28", value: "53" },
+  { date: "2022-5-29", value: "10" },
 ];
 
-// data.forEach((item) => ((item.date = new Date(item.date)), (item.value = +item.value)));
+const data2 = [
+  { date: "2022-5-10", value: "301" },
+  { date: "2022-5-11", value: "402" },
+  { date: "2022-5-12", value: "150" },
+  { date: "2022-5-13", value: "166" },
+  { date: "2022-5-14", value: "522" },
+  { date: "2022-5-15", value: "126" },
+  { date: "2022-5-16", value: "122" },
+  { date: "2022-5-17", value: "105" },
+  { date: "2022-5-18", value: "180" },
+  { date: "2022-5-19", value: "143" },
+  { date: "2022-5-20", value: "143" },
+  { date: "2022-5-21", value: "145" },
+  { date: "2022-5-22", value: "134" },
+  { date: "2022-5-23", value: "166" },
+  { date: "2022-5-24", value: "250" },
+  { date: "2022-5-25", value: "229" },
+  { date: "2022-5-26", value: "189" },
+  { date: "2022-5-27", value: "167" },
+  { date: "2022-5-28", value: "153" },
+  { date: "2022-5-29", value: "110" },
+];
+
+// data02.forEach((item) => ((item.date = new Date(item.date)), (item.value = +item.value)));
 
 // set the dimensions and margins of the graph
 var margin = { top: 20, right: 20, bottom: 30, left: 50 },
@@ -42,7 +65,7 @@ const line1Color = "#FFB300";
 const tooltipWidth = 124;
 const tooltipHeight = 32;
 // parse the date / time
-var parseTime = d3.timeParse("%d-%b-%y");
+var parseTime = d3.timeParse("%Y-%m-%d");
 var bisectDate = d3.bisector(function (d) {
   return d.date;
 }).left;
@@ -73,34 +96,48 @@ var svg = d3
   .append("g")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var lineSvg = svg.append("g");
-
+var line1 = svg.append("g");
+var line2 = svg.append("g");
 // Get the data
 // d3.csv("atad.csv").then(function (data) {
 // format the data
 // console.log(JSON.stringify(data));
 
-data.forEach(function (d) {
+data1.forEach(function (d) {
+  d.date = parseTime(d.date);
+  d.value = +d.value;
+});
+data2.forEach(function (d) {
   d.date = parseTime(d.date);
   d.value = +d.value;
 });
 // Scale the range of the data
 x.domain(
-  d3.extent(data, function (d) {
+  d3.extent(data1, function (d) {
     return d.date;
   })
 );
 y.domain([
   0,
-  d3.max(data, function (d) {
+  d3.max(data1, function (d) {
     return d.value;
   }),
 ]);
 
 // Add the valueline path.
-lineSvg
+line1
   .append("path")
-  .data([data])
+  .data([data1])
+  .attr("fill", "none")
+  .attr("stroke", line1Color)
+  .attr("stroke-linejoin", "round")
+  .attr("stroke-linecap", "round")
+  .attr("class", "line")
+  .attr("d", valueline);
+
+line2
+  .append("path")
+  .data([data2])
   .attr("fill", "none")
   .attr("stroke", line1Color)
   .attr("stroke-linejoin", "round")
@@ -126,37 +163,40 @@ svg
   .call(d3.axisLeft(y))
   .call((g) => g.select(".domain").remove()); // 移除 y 轴
 
-// filters go in defs element
-var defs = svg.append("defs");
-var filter = defs.append("filter").attr("id", "drop-shadow").attr("height", "130%");
 // add tooltip
-var tooltipG = svg.append("g").style("display", "none");
+function addToolTip() {
+  var tooltipG = svg.append("g").style("display", "none");
 
-tooltipG
-  .append("circle")
-  .attr("class", "tooltip1")
-  .style("fill", "#fff")
-  .style("stroke", line1Color)
-  .style("stroke-width", 2)
-  .attr("r", 4);
+  tooltipG
+    .append("circle")
+    .attr("class", "tooltip1")
+    .style("fill", "#fff")
+    .style("stroke", line1Color)
+    .style("stroke-width", 2)
+    .attr("r", 4);
 
-tooltipG
-  .append("rect")
-  .attr("class", "tooltip1")
-  .style("fill", "#fff")
-  // .style("stroke", "red")
-  .style("filter", "drop-shadow(0 0 5px rgba(6,6,6,0.3))")
-  // .style("box-shadow", "0 3px 6px 0 rgb(226 229 240 / 30%)")
-  .attr("width", tooltipWidth)
-  .attr("height", tooltipHeight);
-tooltipG
-  .append("text")
-  .attr("class", "tooltip1")
-  .style("font-weight", 400)
-  .style("font-family", "Arial")
-  .style("font-size", "12px")
-  .style("fill", "red")
-  .text("安全事件");
+  tooltipG
+    .append("rect")
+    .attr("class", "tooltip1")
+    .attr("rx", "3") // 圆角
+    .attr("ry", "3") // 圆角
+    .style("fill", "#fff")
+    .style("filter", "drop-shadow(0 0 5px rgba(3, 3, 3, 0.15))")
+    .attr("width", tooltipWidth)
+    .attr("height", tooltipHeight);
+  tooltipG
+    .append("text")
+    .attr("class", "tooltip1")
+    .attr("dy", "0.4em")
+    .attr("dx", "2em")
+    .style("font-family", "Arial")
+    .style("font-size", "12px")
+    .style("fill", "#333333")
+    .text("安全事件");
+  return tooltipG;
+}
+var tooltipG1 =  addToolTip();
+var tooltipG2 =  addToolTip();
 // append the rectangle to capture mouse
 svg
   .append("rect")
@@ -165,18 +205,21 @@ svg
   .style("fill", "none")
   .style("pointer-events", "all")
   .on("mouseover", function () {
-    tooltipG.style("display", null);
-    // tooltipG.style("display", null);
-    // tooltipG.style("display", null);
+    tooltipG1.style("display", null);
+    tooltipG2.style("display", null);
   })
   .on("mouseout", function () {
-    tooltipG.style("display", "none");
-    // tooltipText.style("display", "none");
-    // tooltip.style("display", "none");
+    tooltipG1.style("display", "none");
+    tooltipG2.style("display", "none");
   })
   .on("mousemove", mousemove);
 
 function mousemove(event) {
+  showTooltip(event, tooltipG1, data1);
+  showTooltip(event, tooltipG2, data2);
+}
+
+function showTooltip(event, tooltipG, data) {
   var x0 = x.invert(d3.pointer(event, this)[0]),
     i = bisectDate(data, x0, 1),
     d0 = data[i - 1],
@@ -192,15 +235,6 @@ function mousemove(event) {
     .select("text.tooltip1")
     .text("安全事件：" + d.value)
     .attr("transform", "translate(" + x(d.date) + "," + y(d.value) + ")");
-  // html定位有问题
-  // div.html(d.value);
-  // div.transition().duration(200).style("opacity", 0.9);
-  // console.log(x(d.date), y(d.value));
-  // div
-  //   .html(d.value)
-  //   .style("left",
-  //   .style("top", y(d.value) + "px");x(d.date) + "px")
-
   tooltipG
     .select("rect.tooltip1")
     .attr("transform", "translate(" + x(d.date) + "," + y(d.value) + ")")
