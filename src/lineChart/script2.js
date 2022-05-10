@@ -12,7 +12,7 @@ var x = d3.scaleTime().range([0, width]);
 var y = d3.scaleLinear().range([height, 0]);
 
 // define the line
-var valueline = d3
+var line = d3
   .line()
   .x(function (d) {
     return x(d.date);
@@ -56,7 +56,7 @@ d3.csv("data.csv").then(function (data) {
   ]);
 
   // add the valueline path.
-  svg.append("path").data([data]).attr("class", "line").attr("d", valueline);
+  svg.append("path").data([data]).attr("class", "line").attr("d", line);
 
   // add the dots with tooltips
   svg

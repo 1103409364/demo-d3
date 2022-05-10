@@ -76,7 +76,7 @@ var x = d3.scaleTime().range([0, width]);
 var y = d3.scaleLinear().range([height, 0]);
 
 // define the line
-var valueline = d3
+var line = d3
   .line()
   .x(function (d) {
     return x(d.date);
@@ -85,9 +85,6 @@ var valueline = d3
     return y(d.value);
   });
 
-// append the svg obgect to the body of the page
-// appends a 'group' element to 'svg'
-// moves the 'group' element to the top left margin
 var svg = d3
   .select("#line-chart")
   .append("svg")
@@ -97,12 +94,8 @@ var svg = d3
   .append("g")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var line1 = svg.append("g");
-var line2 = svg.append("g");
-// Get the data
-// d3.csv("atad.csv").then(function (data) {
-// format the data
-// console.log(JSON.stringify(data));
+var line1G = svg.append("g");
+var line2G = svg.append("g");
 
 data1.forEach(function (d) {
   d.date = parseTime(d.date);
@@ -125,8 +118,62 @@ y.domain([
   }),
 ]);
 
+// 渐变
+var areaGradient1 = svg
+  .append("defs")
+  .append("linearGradient")
+  .attr("id", "areaGradient1")
+  .attr("x1", "0%")
+  .attr("y1", "0%")
+  .attr("x2", "0%")
+  .attr("y2", "100%");
+areaGradient1.append("stop").attr("offset", "0%").attr("stop-color", line1Color).attr("stop-opacity", 0.3);
+areaGradient1.append("stop").attr("offset", "80%").attr("stop-color", "#fff").attr("stop-opacity", 0);
+svg
+  .append("path")
+  .datum(data1)
+  .style("fill", "url(#areaGradient1)")
+  .attr(
+    "d",
+    d3
+      .area()
+      .x(function (d) {
+        return x(d.date);
+      })
+      .y0(y(0))
+      .y1(function (d) {
+        return y(d.value);
+      })
+  );
+
+var areaGradient2 = svg
+  .append("defs")
+  .append("linearGradient")
+  .attr("id", "areaGradient2")
+  .attr("x1", "0%")
+  .attr("y1", "0%")
+  .attr("x2", "0%")
+  .attr("y2", "100%");
+areaGradient2.append("stop").attr("offset", "0%").attr("stop-color", line2Color).attr("stop-opacity", 0.3);
+areaGradient2.append("stop").attr("offset", "80%").attr("stop-color", "#fff").attr("stop-opacity", 0);
+svg
+  .append("path")
+  .datum(data2)
+  .style("fill", "url(#areaGradient2)")
+  .attr(
+    "d",
+    d3
+      .area()
+      .x(function (d) {
+        return x(d.date);
+      })
+      .y0(y(0))
+      .y1(function (d) {
+        return y(d.value);
+      })
+  );
 // Add the valueline path.
-line1
+line1G
   .append("path")
   .data([data1])
   .attr("fill", "none")
@@ -134,9 +181,9 @@ line1
   .attr("stroke-linejoin", "round")
   .attr("stroke-linecap", "round")
   .attr("class", "line")
-  .attr("d", valueline);
+  .attr("d", line);
 
-line2
+line2G
   .append("path")
   .data([data2])
   .attr("fill", "none")
@@ -144,7 +191,7 @@ line2
   .attr("stroke-linejoin", "round")
   .attr("stroke-linecap", "round")
   .attr("class", "line")
-  .attr("d", valueline);
+  .attr("d", line);
 
 // Add the X Axis
 svg
@@ -292,4 +339,4 @@ legend
   .attr("fill", "#8F9BB3")
   .style("font-size", "0.65em")
   .text((d) => d);
-// });
+
