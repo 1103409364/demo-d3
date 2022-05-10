@@ -144,7 +144,9 @@ tooltipG
   .append("rect")
   .attr("class", "tooltip1")
   .style("fill", "#fff")
-  .style("stroke", "red")
+  // .style("stroke", "red")
+  .style("filter", "drop-shadow(0 0 5px rgba(6,6,6,0.3))")
+  // .style("box-shadow", "0 3px 6px 0 rgb(226 229 240 / 30%)")
   .attr("width", tooltipWidth)
   .attr("height", tooltipHeight);
 tooltipG
