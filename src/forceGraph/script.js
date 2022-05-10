@@ -14,6 +14,7 @@ const dataset = {
     { id: 11, name: "REPT", label: "Reporting", group: "Team E", runtime: 20 },
     { id: 12, name: "SEDD", label: "State Data", group: "Team A", runtime: 20 },
     { id: 13, name: "SNAP", label: "Snapshot", group: "Team A", runtime: 20 },
+    { id: 10000, name: "freedom", label: "Snapshot", group: "Team A", runtime: 20 },
   ],
   links: [
     { source: 1, target: 3, type: "Next -->" },
@@ -48,55 +49,11 @@ const dataset = {
     { source: 5, target: 3, type: "Next -->" },
   ],
 };
-const dataset2 = {
-  nodes: [
-    // 组件名称，标签简称、全称，运行时间等
-    { id: 1, name: "AAAA", label: "Aggregation", group: "Team C", runtime: 20 },
-    { id: 2, name: "BBB", label: "Assessment Repository", group: "Team A", runtime: 20 },
-    { id: 3, name: "CCC", label: "Final Calc", group: "Team C", runtime: 20 },
-    { id: 5, name: "EEEE", label: "Eligibility", group: "Team B", runtime: 20 },
-    { id: 6, name: "FFFF", label: "Goal Setting", group: "Team C", runtime: 20 },
-    { id: 7, name: "GGGG", label: "Growth Model", group: "Team C", runtime: 20 },
-    { id: 8, name: "HHHH", label: "Linkage", group: "Team A", runtime: 20 },
-    { id: 9, name: "GGGG", label: "MOSL", group: "Team A", runtime: 20 },
-    { id: 10, name: "HHHHH", label: "MOTP", group: "Team A", runtime: 20 },
-    { id: 11, name: "IIIII", label: "Reporting", group: "Team E", runtime: 20 },
-    { id: 12, name: "JJJJ", label: "State Data", group: "Team A", runtime: 20 },
-    { id: 13, name: "KKKK", label: "Snapshot", group: "Team A", runtime: 20 },
-  ],
-  links: [
-    { source: 1, target: 3, type: "Next -->" },
-    { source: 1, target: 2, type: "Next -->" },
-    { source: 6, target: 1, type: "Next -->" },
-    { source: 7, target: 1, type: "Next -->" },
-    { source: 9, target: 1, type: "Next -->" },
-    { source: 2, target: 6, type: "Next -->" },
-    { source: 2, target: 7, type: "Next -->" },
-    { source: 2, target: 8, type: "Next -->" },
-    { source: 2, target: 9, type: "Next -->" },
-    { source: 10, target: 3, type: "Next -->" },
-    { source: 3, target: 11, type: "Next -->" },
-    { source: 8, target: 5, type: "Go to ->" },
-    { source: 8, target: 11, type: "Go to ->" },
-    { source: 6, target: 9, type: "Go to ->" },
-    { source: 7, target: 9, type: "Go to ->" },
-    { source: 8, target: 9, type: "Go to ->" },
-    { source: 9, target: 11, type: "Go to ->" },
-    { source: 12, target: 9, type: "Go to ->" },
-    { source: 13, target: 11, type: "Go to ->" },
-    { source: 13, target: 2, type: "Go to ->" },
-    { source: 13, target: 5, type: "This way>>" },
-    { source: 13, target: 8, type: "This way>>" },
-    { source: 13, target: 9, type: "This way>>" },
-    { source: 13, target: 10, type: "This way>>" },
-    { source: 10, target: 5, type: "Next -->" },
-    { source: 5, target: 3, type: "Next -->" },
-  ],
-};
 
 function render(dataset) {
   const width = 890;
   const height = 500;
+  const nodeRadius = 17;
 
   const colorScale = d3
     .scaleOrdinal() //=d3.scaleOrdinal(d3.schemeSet2)
@@ -127,8 +84,8 @@ function render(dataset) {
 
   svg.call(zoom).on("dblclick.zoom", null);
 
-  const subgraphWidth = (width * 2) / 8;
-  const subgraphHeight = (height * 1) / 5;
+  // const subgraphWidth = (width * 2) / 8;
+  // const subgraphHeight = (height * 1) / 5;
 
   const subgraph = svg.append("g").attr("id", "subgraph");
   // .attr("transform", `translate(${width - subgraphWidth - 20}, 0)`);
@@ -232,7 +189,7 @@ function render(dataset) {
   // 节点绘制
   node
     .append("circle")
-    .attr("r", (d) => 17) //+ d.runtime/20 ) //radius of the circle
+    .attr("r", (d) => nodeRadius) //+ d.runtime/20 ) //radius of the circle
     .attr("id", (d) => "circle" + d.id)
     .style("stroke", "grey")
     .style("stroke-opacity", 0.3)
@@ -377,7 +334,14 @@ function render(dataset) {
       .attr("x2", (d) => d.target.x)
       .attr("y2", (d) => d.target.y);
 
-    node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+    node
+      .attr("cx", function (d) {
+        return (d.x = Math.max(nodeRadius, Math.min(width - nodeRadius, d.x))); // 限制节点的绘制范围
+      })
+      .attr("cy", function (d) {
+        return (d.y = Math.max(nodeRadius, Math.min(height - nodeRadius, d.y)));
+      })
+      .attr("transform", (d) => `translate(${d.x},${d.y})`);
 
     edgepaths.attr(
       "d",
@@ -396,8 +360,8 @@ function render(dataset) {
 
   //When the drag gesture starts, the targeted node is fixed to the pointer
   function dragged(event, d) {
-    d.fx = event.x;
-    d.fy = event.y;
+    d.fx = Math.max(nodeRadius, Math.min(width - nodeRadius, event.x)); // 限制节点的拖拽范围
+    d.fy = Math.max(nodeRadius, Math.min(height - nodeRadius, event.y));
   }
 
   //绘制 legend
