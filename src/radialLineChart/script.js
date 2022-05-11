@@ -16,7 +16,7 @@ function draw(data) {
 
   var innerRadius = 80; // 内圆半径
   var outerRadius = Math.min(width, height) / 2 - 5; // 外圆半径
-  var parseTime = d3.timeParse("%d-%m-%y");
+  var parseTime = d3.timeParse("%Y-%m-%d");
   var formatMonth = d3.timeFormat("%m");
   var fullCircle = 2 * Math.PI;
 
