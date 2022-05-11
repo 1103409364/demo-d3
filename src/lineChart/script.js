@@ -95,15 +95,15 @@ function draw(data) {
     .call(
       d3
         .axisBottom(x)
-        .ticks(width / 80)
-        .tickFormat(d3.timeFormat("%m/%d"))
+        .ticks(10) // 设置x轴刻度数量
+        .tickFormat(d3.timeFormat("%m/%d")) // 设置x轴label的格式
         .tickSizeOuter(0)
     );
   xAxis.attr("class", "line-axis"); // 设置 class 修改颜色等样式
   // Add the Y Axis
   var yAxis = svg
     .append("g")
-    .call(d3.axisLeft(y))
+    .call(d3.axisLeft(y).ticks(5)) // 设置y轴刻度数量
     .call((g) => g.select(".domain").remove()); // 移除 y 轴
   yAxis.attr("class", "line-axis"); // 设置 class 修改颜色等样式
 
