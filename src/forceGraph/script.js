@@ -1,4 +1,4 @@
-const dataset = {
+const dataSet = {
   nodes: [
     // 组件名称，标签简称、全称，运行时间等
     { id: 1, name: "AGGR", label: "Aggregation", group: "Team C", runtime: 20 },
@@ -50,16 +50,14 @@ const dataset = {
   ],
 };
 
-function render(dataset) {
+function render(dataSet) {
   const width = 890;
   const height = 500;
   const nodeRadius = 17;
   const lineOpacity = 0.5;
 
-  const colorScale = d3
-    .scaleOrdinal() //=d3.scaleOrdinal(d3.schemeSet2)
-    .domain(["Team A", "Team B", "Team C", "Team D", "Team E"])
-    .range(["#ff9e6d", "#86cbff", "#c2e5a0", "#fff686", "#9e79db"]);
+  const colorScale = buildColorScale(dataSet);
+
   //create a simulation for an array of nodes, and compose the desired forces.
   const simulation = d3
     .forceSimulation()
@@ -120,12 +118,12 @@ function render(dataset) {
     .attr("fill", "#999")
     .style("stroke", "none");
 
-  // console.log("dataset is ...", dataset);
+  // console.log("dataSet is ...", dataSet);
 
   // Initialize the links 连接线
   const link = g1
     .selectAll(".links")
-    .data(dataset.links)
+    .data(dataSet.links)
     .enter()
     .append("line")
     .attr("class", "links")
@@ -143,7 +141,7 @@ function render(dataset) {
   // 连线的文字
   const edgepaths = g1
     .selectAll(".edgepath") //make path go along with the link provide position for link labels
-    .data(dataset.links)
+    .data(dataSet.links)
     .enter()
     .append("path")
     .attr("class", "edgepath")
@@ -156,7 +154,7 @@ function render(dataset) {
 
   const edgelabels = g1
     .selectAll(".edgelabel")
-    .data(dataset.links)
+    .data(dataSet.links)
     .enter()
     .append("text")
     .style("pointer-events", "none")
@@ -179,7 +177,7 @@ function render(dataset) {
     .text((d) => d.type);
 
   // Initialize the nodes
-  const node = g1.selectAll(".nodes").data(dataset.nodes).enter().append("g").attr("class", "nodes");
+  const node = g1.selectAll(".nodes").data(dataSet.nodes).enter().append("g").attr("class", "nodes");
 
   node.call(
     d3
@@ -219,9 +217,9 @@ function render(dataset) {
 
   // 建立邻居字典
   var neighborTarget = {};
-  for (var i = 0; i < dataset.nodes.length; i++) {
-    var id = dataset.nodes[i].id;
-    neighborTarget[id] = dataset.links
+  for (var i = 0; i < dataSet.nodes.length; i++) {
+    var id = dataSet.nodes[i].id;
+    neighborTarget[id] = dataSet.links
       .filter(function (d) {
         return d.source == id; // source
       })
@@ -232,9 +230,9 @@ function render(dataset) {
   console.log("neighborTarget is ", neighborTarget);
 
   var neighborSource = {};
-  for (var i = 0; i < dataset.nodes.length; i++) {
-    var id = dataset.nodes[i].id;
-    neighborSource[id] = dataset.links
+  for (var i = 0; i < dataSet.nodes.length; i++) {
+    var id = dataSet.nodes[i].id;
+    neighborSource[id] = dataSet.links
       .filter(function (d) {
         return d.target == id; // target
       })
@@ -247,9 +245,9 @@ function render(dataset) {
 
   // 非邻居字典
   // var nonNeighbor = {};
-  // for (var i = 0; i < dataset.nodes.length; i++) {
-  //   var id = dataset.nodes[i].id;
-  //   nonNeighbor[id] = dataset.nodes
+  // for (var i = 0; i < dataSet.nodes.length; i++) {
+  //   var id = dataSet.nodes[i].id;
+  //   nonNeighbor[id] = dataSet.nodes
   //     .filter(
   //       (d) => !neighborSource[id].includes(d.id) && !neighborTarget[id].includes(d.id) && d.id != id
   //     )
@@ -323,9 +321,9 @@ function render(dataset) {
     });
 
   //Listen for tick events to render the nodes as they update in your Canvas or SVG.
-  simulation.nodes(dataset.nodes).on("tick", ticked);
+  simulation.nodes(dataSet.nodes).on("tick", ticked);
 
-  simulation.force("link").links(dataset.links);
+  simulation.force("link").links(dataSet.links);
 
   // This function is run at each iteration of the force algorithm, updating the nodes position (the nodes data array is directly manipulated).
   function ticked() {
@@ -363,6 +361,23 @@ function render(dataset) {
   function dragged(event, d) {
     d.fx = Math.max(nodeRadius, Math.min(width - nodeRadius, event.x)); // 限制节点的拖拽范围
     d.fy = Math.max(nodeRadius, Math.min(height - nodeRadius, event.y));
+  }
+
+  // 构建颜色比例尺
+  function buildColorScale(data) {
+    var temp = {};
+    var colors = ["#ff9e6d", "#86cbff", "#c2e5a0", "#fff686", "#9e79db"];
+    data.nodes.forEach(function (item) {
+      temp[item.group] = colors[item.group];
+    });
+    var domain = Object.keys(temp);
+    var range = domain.map(function (item, i) {
+      return colors[i] || "#" + ((Math.random() * 0xffffff) << 0).toString(16); // 随机颜色
+    });
+    return d3
+      .scaleOrdinal() //=d3.scaleOrdinal(d3.schemeSet2)
+      .domain(domain) // 分类域 || ['A', 'B', 'C', 'D', 'E']
+      .range(range); // 颜色
   }
 
   //绘制 legend
@@ -408,7 +423,7 @@ function render(dataset) {
   legend_g2.append("text").attr("x", 15).attr("y", 20).text("short runtime").style("font-size", "10px");
 }
 
-render(dataset);
+render(dataSet);
 // TODO:搜索节点高亮，聚焦
 // 重绘
 // setTimeout(() => {
