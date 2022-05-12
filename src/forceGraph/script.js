@@ -442,17 +442,12 @@ render(dataSet);
 document.querySelector("#download-btn").addEventListener("click", download);
 // 下载 svg
 function download() {
-  var svgData = document.querySelector("svg");
-  var serializer = new XMLSerializer();
-  svgData = serializer.serializeToString(svgData);
-  //add xml declaration
-  svgData = '<?xml version="1.0" standalone="no"?>\r\n' + svgData;
+  //add xml declaration and serialize
+  var svgData = '<?xml version="1.0" standalone="no"?>\r\n' + (new XMLSerializer()).serializeToString(document.querySelector("svg")); 
   //convert svg source to URI data scheme.
   // var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
-  var svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-  var svgUrl = URL.createObjectURL(svgBlob);
   var downloadLink = document.createElement("a");
-  downloadLink.href = svgUrl;
+  downloadLink.href = URL.createObjectURL(new Blob([svgData], { type: "image/svg+xml;charset=utf-8" }));
   downloadLink.download = new Date().toLocaleDateString() + ".svg";
   document.body.appendChild(downloadLink);
   downloadLink.click();
