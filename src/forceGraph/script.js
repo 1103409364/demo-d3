@@ -184,6 +184,8 @@ function render(dataSet) {
       .drag() //sets the event listener for the specified typenames and returns the drag behavior.
       .on("start", dragStarted) //start - after a new pointer becomes active (on mousedown or touchstart).
       .on("drag", dragged) //drag - after an active pointer moves (on mousemove or touchmove).
+      // 不加 end 的话，拖动后 cpu 占用率高
+      .on("end", dragEnded) //end - after an active pointer becomes inactive (on mouseup, touchend or touchcancel).
   );
   // 节点绘制
   node
@@ -352,7 +354,7 @@ function render(dataSet) {
   //The simulation is temporarily “heated” during interaction by setting the target alpha to a non-zero value.
   function dragStarted(event, d) {
     // debugger
-    if (!event.active) simulation.alphaTarget(0.3).restart(); //sets the current target alpha to the specified number in the range [0,1].
+    if (!event.active) simulation.alphaTarget(0.3).restart();  // 设置衰减系数，对节点位置移动过程的模拟，数值越高移动越快，数值范围[0, 1] sets the current target alpha to the specified number in the range [0,1]. 
     d.fy = d.y; //fx - the node’s fixed x-position. Original is null.
     d.fx = d.x; //fy - the node’s fixed y-position. Original is null.
   }
@@ -361,6 +363,12 @@ function render(dataSet) {
   function dragged(event, d) {
     d.fx = Math.max(nodeRadius, Math.min(width - nodeRadius, event.x)); // 限制节点的拖拽范围
     d.fy = Math.max(nodeRadius, Math.min(height - nodeRadius, event.y));
+  }
+  //When the drag gesture ends, the targeted node is released and the simulation is re-heated.
+  function dragEnded(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
   }
 
   // 构建颜色比例尺
