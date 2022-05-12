@@ -354,7 +354,7 @@ function render(dataSet) {
   //The simulation is temporarily “heated” during interaction by setting the target alpha to a non-zero value.
   function dragStarted(event, d) {
     // debugger
-    if (!event.active) simulation.alphaTarget(0.3).restart();  // 设置衰减系数，对节点位置移动过程的模拟，数值越高移动越快，数值范围[0, 1] sets the current target alpha to the specified number in the range [0,1]. 
+    if (!event.active) simulation.alphaTarget(0.3).restart(); // 设置衰减系数，对节点位置移动过程的模拟，数值越高移动越快，数值范围[0, 1] sets the current target alpha to the specified number in the range [0,1].
     d.fy = d.y; //fx - the node’s fixed x-position. Original is null.
     d.fx = d.x; //fy - the node’s fixed y-position. Original is null.
   }
@@ -438,3 +438,31 @@ render(dataSet);
 //   d3.select("#force-graph").selectAll("*").remove(); //清空SVG中的内容
 //   render(dataset2);
 // }, 3000);
+
+document.querySelector("#download-btn").addEventListener("click", download);
+// 下载 svg
+function download() {
+  var svgData = document.querySelector("svg");
+  var serializer = new XMLSerializer();
+  svgData = serializer.serializeToString(svgData);
+  //add xml declaration
+  svgData = '<?xml version="1.0" standalone="no"?>\r\n' + svgData;
+  //convert svg source to URI data scheme.
+  // var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
+  var svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+  var svgUrl = URL.createObjectURL(svgBlob);
+  var downloadLink = document.createElement("a");
+  downloadLink.href = svgUrl;
+  downloadLink.download = new Date().toLocaleDateString() + ".svg";
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+}
+
+//add name spaces. serializeToString 会添加 namespace
+// if (!svgData.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
+//   svgData = svgData.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+// }
+// if (!svgData.match(/^<svg[^>]+"http:\/\/www\.w3\.org\/1999\/xlink"/)) {
+//   svgData = svgData.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+// }
