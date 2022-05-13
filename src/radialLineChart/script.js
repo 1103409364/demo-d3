@@ -35,28 +35,20 @@ function draw(data) {
   // d3.json('data2.json').then(
   //     function (data) {
   data.line1.forEach(function (data) {
-    return (data.date = parseTime(data.date));
-  }, (data.value = +data.value));
+    data.date = parseTime(data.date);
+    data.value = +data.value;
+  });
   data.line2.forEach(function (data) {
-    return (data.date = parseTime(data.date));
-  }, (data.value = +data.value));
-  x.domain(
-    d3.extent(data.line1, function (d) {
-      return d.date;
-    })
-  );
+    data.date = parseTime(data.date);
+    data.value = +data.value;
+  });
+
+  var xExtend = d3.extent([...data.line1.map((d) => d.date), ...data.line2.map((d) => d.date)]);
+  x.domain(xExtend); // 设置坐标轴定义域
   // 计算y轴的范围
-  // var extend = [].concat(
-  //     d3.extent(data.line1, function (d) {
-  //         return d.value;
-  //     }),
-  //     d3.extent(data.line2, function (d) {
-  //         return d.value;
-  //     })
-  // );
-  var extend = d3.extent([...data.line1.map((d) => d.value), ...data.line2.map((d) => d.value)]);
-  extend[1] = +extend[1] + (+extend[1] - +extend[0]) * 0.2; // 增加20%的范围 以便显示完整刻度
-  y.domain(d3.extent(extend)); // y轴的范围
+  var yExtend = d3.extent([...data.line1.map((d) => d.value), ...data.line2.map((d) => d.value)]);
+  yExtend[1] = +yExtend[1] + (+yExtend[1] - +yExtend[0]) * 0.2; // 增加20%的范围 以便显示完整刻度
+  y.domain(yExtend); // 设置y轴定义域
 
   var svgDefs = svg.append("defs");
   // 线1渐变
