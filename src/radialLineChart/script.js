@@ -1,3 +1,6 @@
+function monthDiff(dateFrom, dateTo) {
+  return dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear());
+}
 function draw(data) {
   var width = 500; // this.$refs.radialChartRef.clientWidth; //- margin.left - margin.right;
   var height = width; //this.$refs.radialChartRef.clientHeight; //˝- margin.top - margin.bottom;
@@ -44,6 +47,7 @@ function draw(data) {
   });
 
   var xExtend = d3.extent([...data.line1.map((d) => d.date), ...data.line2.map((d) => d.date)]);
+  var xTickNum = monthDiff(xExtend[0], xExtend[1]) || 12; // x轴刻度数量
   x.domain(xExtend); // 设置坐标轴定义域
   // 计算y轴的范围
   var yExtend = d3.extent([...data.line1.map((d) => d.value), ...data.line2.map((d) => d.value)]);
@@ -168,7 +172,7 @@ function draw(data) {
   var xAxis = svg.append("g");
   var xTick = xAxis
     .selectAll("g")
-    .data(x.ticks(12))
+    .data(x.ticks(xTickNum))
     .enter()
     .append("g")
     .attr("text-anchor", "middle")
