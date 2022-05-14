@@ -1,7 +1,6 @@
 // 一维数组，通过 symbol 分组
 const lines = [
   { date: "2022-5-10", value: "601", symbol: "A" },
-  { date: "2022-5-11", value: "502", symbol: "A" },
   { date: "2022-5-12", value: "100", symbol: "A" },
   { date: "2022-5-13", value: "666", symbol: "A" },
   { date: "2022-5-14", value: "622", symbol: "A" },
@@ -28,7 +27,6 @@ const lines = [
   { date: "2022-5-15", value: "126", symbol: "B" },
   { date: "2022-5-16", value: "122", symbol: "B" },
   { date: "2022-5-17", value: "105", symbol: "B" },
-  { date: "2022-5-18", value: "180", symbol: "B" },
   { date: "2022-5-19", value: "143", symbol: "B" },
   { date: "2022-5-20", value: "143", symbol: "B" },
   { date: "2022-5-21", value: "145", symbol: "B" },
@@ -39,7 +37,15 @@ const lines = [
   { date: "2022-5-26", value: "189", symbol: "B" },
   { date: "2022-5-27", value: "167", symbol: "B" },
   { date: "2022-5-28", value: "153", symbol: "B" },
-  { date: "2022-5-29", value: "110", symbol: "B" },
+  { date: "2022-5-11", value: "0", symbol: "C" },
+  { date: "2022-5-21", value: "545", symbol: "C" },
+  { date: "2022-5-22", value: "534", symbol: "C" },
+  { date: "2022-5-23", value: "566", symbol: "C" },
+  { date: "2022-5-24", value: "550", symbol: "C" },
+  { date: "2022-5-25", value: "529", symbol: "C" },
+  { date: "2022-5-26", value: "589", symbol: "C" },
+  { date: "2022-5-27", value: "567", symbol: "C" },
+  { date: "2022-5-28", value: "553", symbol: "C" },
 ];
 
 function draw(rowData) {
