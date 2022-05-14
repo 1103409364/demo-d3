@@ -82,8 +82,6 @@ d3.csv("stocks.csv").then(function (data) {
         return (d.color = color(d.key));
       })
       .on("click", function () {
-        console.log(d, 111);
-
         // Determine if current line is visible
         var active = d.active ? false : true,
           newOpacity = active ? 0 : 1;
