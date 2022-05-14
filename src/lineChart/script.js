@@ -87,7 +87,6 @@ function draw(rowData) {
     d3.group(rowData, (d) => d.symbol), // {A=>[], B=>[]} InternMap https://www.geeksforgeeks.org/d3-js-group-method/ https://github.com/d3/d3-array
     ([key, values]) => ({ key, values }) // [{A:[]}, {B:[]}]
   );
-  console.log(d3.group(rowData, (d) => d.symbol));
   // 创建自己的颜色比例尺
   // var color = d3.scale
   //   .ordinal()
@@ -97,9 +96,11 @@ function draw(rowData) {
   // g 分组区分优先级，后创建的元素会覆盖前面创建 g
   const lineG = svg.append("g"); // 创建一个线条容器
   const tooltipG = svg.append("g").style("display", "none"); // 创建一个 tooltip 容器
+  const activeStatus = {}; // 点击展示 or 隐藏线条
   // const tooltipWidth = 124;
   // const tooltipHeight = 32;
   dataNest.forEach((item, i) => {
+    activeStatus[item.key] = true;
     // 画线
     lineG
       .append("path")
@@ -117,7 +118,7 @@ function draw(rowData) {
     const areaGradient = svg
       .append("defs")
       .append("linearGradient")
-      .attr("id", "areaGradient" + i)
+      .attr("id", "lg" + item.key.replace(/\s+/g, ""))
       .attr("x1", "0%")
       .attr("y1", "0%")
       .attr("x2", "0%")
@@ -131,7 +132,8 @@ function draw(rowData) {
     svg
       .append("path")
       .datum(item.values)
-      .style("fill", `url(#areaGradient${i})`)
+      .attr("id", "area" + item.key.replace(/\s+/g, "")) // assign an ID 用于隐藏等操作
+      .style("fill", `url(#lg${item.key.replace(/\s+/g, "")})`)
       .attr(
         "d",
         d3
@@ -212,6 +214,7 @@ function draw(rowData) {
     .attr("height", height)
     .style("fill", "none")
     .style("pointer-events", "all")
+    .style("cursor", "pointer")
     .on("mouseover", () => tooltipG.style("display", null))
     .on("mouseout", () => tooltipG.style("display", "none"))
     .on("mousemove", mousemove);
@@ -226,7 +229,7 @@ function draw(rowData) {
       const d1 = item.values[index]; // 获取鼠标点击位置的数据
       let d;
       d0 && d1 && (d = x0 - d0.date > d1.date - x0 ? d1 : d0); // 获取离鼠标位置近的的数据
-      const display = d ? null : "none"; // 如果没有数据，则隐藏 tooltip
+      const display = d && activeStatus[item.key] ? null : "none"; // 如果没有数据，则隐藏 tooltip
       tooltipG.select("circle.tooltip" + i).style("display", display);
       tooltipG.select("text.tooltip-text-back" + i).style("display", display);
       tooltipG.select("text.tooltip" + i).style("display", display);
@@ -286,18 +289,34 @@ function draw(rowData) {
     .data(colorScale.domain())
     .enter()
     .append("g")
-    .attr("transform", (d, i) => `translate(${width},${i * 20 + 20})`);
+    .attr("transform", (d, i) => `translate(${width},${i * 20 + 20})`)
+    .style("cursor", "pointer")
+    .on("click", (event, d) => {
+      // 画线时传递过 colorScale key
+      // Determine if current line is visible
+      activeStatus[d] = !activeStatus[d];
+      // Hide or show the elements based on the ID
+      d3.select("#tag" + d.replace(/\s+/g, ""))
+        .transition()
+        .duration(500)
+        .style("opacity", +activeStatus[d]);
+
+      d3.select("#area" + d.replace(/\s+/g, ""))
+        .transition()
+        .duration(500)
+        .style("opacity", +activeStatus[d]);
+    });
 
   legend
     .append("rect")
     .attr("x", 5)
-    .attr("y", -3)
-    .attr("width", 6)
-    .attr("height", 6)
+    .attr("y", -5)
+    .attr("width", 10)
+    .attr("height", 10)
     .attr("fill", colorScale);
   legend
     .append("text")
-    .attr("x", 15)
+    .attr("x", 20)
     .attr("y", 4)
     .attr("fill", "#8F9BB3")
     .style("font-size", "0.65em")
