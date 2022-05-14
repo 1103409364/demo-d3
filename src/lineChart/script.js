@@ -108,7 +108,7 @@ function draw(rowData) {
     // .attr("d", line) //写法2
 
     // 渐变
-    const areaGradient1 = svg
+    const areaGradient = svg
       .append("defs")
       .append("linearGradient")
       .attr("id", "areaGradient" + i)
@@ -116,16 +116,12 @@ function draw(rowData) {
       .attr("y1", "0%")
       .attr("x2", "0%")
       .attr("y2", "100%");
-    areaGradient1
+    areaGradient
       .append("stop")
       .attr("offset", "0%")
       .attr("stop-color", item.color)
       .attr("stop-opacity", 0.3);
-    areaGradient1
-      .append("stop")
-      .attr("offset", "80%")
-      .attr("stop-color", "#fff")
-      .attr("stop-opacity", 0);
+    areaGradient.append("stop").attr("offset", "80%").attr("stop-color", "#fff").attr("stop-opacity", 0);
     svg
       .append("path")
       .datum(item.values)
@@ -138,7 +134,38 @@ function draw(rowData) {
           .y0(yScale(0))
           .y1((d) => yScale(d.value))
       );
-    // 添加 tooltip
+    // 添加 tooltip 遮挡问题，要等一组画完再画另一组
+    // 圆点 焦点
+    tooltipG
+      .append("circle")
+      .attr("class", "tooltip" + i) // 添加 class 用于调整位置
+      .style("fill", "#fff")
+      .style("stroke", item.color)
+      .style("stroke-width", 2)
+      .attr("r", 4);
+    // x 提示线
+    tooltipG
+      .append("line")
+      .attr("class", "tooltip-x" + i)
+      .attr("x1", 0)
+      .attr("y2", 0)
+      .attr("x2", 0)
+      .attr("y2", height)
+      .attr("stroke", item.color)
+      .attr("stroke-width", "1px")
+      .style("stroke-dasharray", "5,5"); //dashed array for line
+    // y 提示线
+    tooltipG
+      .append("line")
+      .attr("class", "tooltip-y" + i)
+      .attr("x1", 0)
+      .attr("y2", 0)
+      .attr("x2", width)
+      .attr("y2", 0)
+      .attr("stroke", item.color)
+      .attr("stroke-width", "1px")
+      .style("stroke-dasharray", "5,5"); //dashed array for line
+    //矩形
     tooltipG
       .append("rect")
       .attr("class", "tooltip" + i)
@@ -148,13 +175,7 @@ function draw(rowData) {
       .style("filter", "drop-shadow(0 0 5px rgba(3, 3, 3, 0.15))")
       .attr("width", tooltipWidth)
       .attr("height", tooltipHeight);
-    tooltipG
-      .append("circle")
-      .attr("class", "tooltip" + i) // 添加 class 用于调整位置
-      .style("fill", "#fff")
-      .style("stroke", item.color)
-      .style("stroke-width", 2)
-      .attr("r", 4);
+    // 文字
     tooltipG
       .append("text")
       .attr("class", "tooltip" + i)
@@ -179,7 +200,7 @@ function draw(rowData) {
     .on("mousemove", mousemove);
 
   const bisectDate = d3.bisector((d) => d.date).left;
-
+  // 鼠标移动 tooltip 跟随
   function mousemove(event) {
     var x0 = xScale.invert(d3.pointer(event, this)[0]); // 通过鼠标位置像素值获取鼠标点击位置的x坐标数据值
     dataNest.forEach((item, i) => {
@@ -195,10 +216,17 @@ function draw(rowData) {
       tooltipG
         .select("circle.tooltip" + i)
         .attr("transform", "translate(" + xScale(d.date) + "," + yScale(d.value) + ")");
+      // 要两条线？一条线当天可能没数据
       tooltipG
         .select("text.tooltip" + i)
         .text(d.value) // "安全事件：" +
         .attr("transform", "translate(" + xScale(d.date) + "," + yScale(d.value) + ")");
+      tooltipG
+        .select("line.tooltip-x" + i)
+        .attr("transform", "translate(" + xScale(d.date) + "," + 0 + ")");
+      tooltipG
+        .select("line.tooltip-y" + i)
+        .attr("transform", "translate(" + 0 + "," + yScale(d.value) + ")");
     });
   }
 
