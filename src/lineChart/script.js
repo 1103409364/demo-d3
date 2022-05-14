@@ -47,31 +47,65 @@ const lines = [
   { date: "2022-5-27", value: "567", symbol: "C" },
   { date: "2022-5-28", value: "553", symbol: "C" },
 ];
-// TODO:点击隐藏 缩放上下文
+
 function draw(rowData) {
   // Set the dimensions of the canvas / graph
-  const margin = { top: 20, right: 66, bottom: 30, left: 40 },
+  const margin = { top: 20, right: 66, bottom: 110, left: 40 },
     width = 800 - margin.left - margin.right,
-    height = 300 - margin.top - margin.bottom;
+    height = 400 - margin.top - margin.bottom;
+  const margin2 = { top: 320, right: 66, bottom: 20, left: 40 },
+    height2 = 400 - margin2.top - margin2.bottom;
   // Parse the date / time
   const parseDate = d3.timeParse("%Y-%m-%d");
   // bisector
   // Set the ranges 定义比例尺 值域
   const xScale = d3.scaleTime().range([0, width]);
   const yScale = d3.scaleLinear().range([height, 0]);
-  // define the line
+  const xScale2 = d3.scaleTime().range([0, width]);
+  const yScale2 = d3.scaleLinear().range([height2, 0]);
   // const colors = ["#FFB300", "#3881FF"];
+
+  // define the line 定义主折线
   const line = d3
     .line()
     .x((d) => xScale(d.date))
     .y((d) => yScale(d.value));
-  // set the ranges
-  const svg = d3
-    .select("#line-chart")
-    .append("svg")
+  // define the line 定义面积 给折线添加渐变
+  const area = d3
+    .area()
+    .x((d) => xScale(d.date))
+    .y0(yScale(0))
+    .y1((d) => yScale(d.value));
+  // define the line 定义缩放区折线
+  const line2 = d3
+    .line()
+    .x((d) => xScale2(d.date))
+    .y((d) => yScale2(d.value));
+  // 获取 svg
+  const svg = d3.select("#line-chart").append("svg");
+  // 上方的折线图分组
+  const lineChart = svg
     .attr("viewBox", [0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom])
+    .attr("class", "focus")
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  // 绘制坐标轴等，用于缩放
+  const focus = svg
+    .attr("viewBox", [0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom])
+    .append("g")
+    .attr("class", "focus")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  // 下方缩放区域分组
+  const context = svg
+    .attr("viewBox", [
+      0,
+      0,
+      width + margin2.left + margin2.right,
+      height2 + margin2.top + margin2.bottom,
+    ])
+    .attr("class", "context")
+    .append("g")
+    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
   // format rowData
   rowData.forEach((d) => ((d.date = parseDate(d.date)), (d.value = +d.value)));
 
@@ -82,7 +116,45 @@ function draw(rowData) {
   xScale.domain(xExtend);
   yScale.domain(yExtend);
 
-  // Group the entries by symbol
+  xScale2.domain(xExtend);
+  yScale2.domain(yExtend);
+
+  // 坐标轴绘制 1 保存变量 brushed 缩放用
+  const xAxis = d3
+    .axisBottom(xScale)
+    .ticks(10) // 设置x轴刻度数量
+    .tickFormat(d3.timeFormat("%m/%d")) // 设置x轴label的格式
+    .tickSizeOuter(0);
+  // Add the Y Axis
+  const yAxis = d3.axisLeft(yScale).ticks(5); // 设置y轴刻度数量
+
+  focus
+    .append("g")
+    .attr("class", "axis axis--x line-axis") // 设置 class 修改颜色等样式
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+  // remove 移除 y 轴竖线
+  focus.append("g").attr("class", "axis axis--y line-axis").call(yAxis).select(".domain").remove();
+
+  // 坐标轴绘制 2
+  context
+    .append("g")
+    .attr("transform", "translate(0," + height2 + ")")
+    .attr("class", "x-axis")
+    .call(
+      d3
+        .axisBottom(xScale2)
+        .ticks(10) // 设置x轴刻度数量
+        .tickFormat(d3.timeFormat("%m/%d")) // 设置x轴label的格式
+        .tickSizeOuter(0)
+    );
+  // Add the Y Axis
+  context
+    .append("g")
+    .call(d3.axisLeft(yScale2).ticks(1))
+    .call((g) => g.select(".domain").remove()); // 移除 y 轴; // 设置y轴刻度数量
+  // =============================================================================
+  // Group the entries by symbol 数据转换分组
   const dataNest = Array.from(
     d3.group(rowData, (d) => d.symbol), // {A=>[], B=>[]} InternMap https://www.geeksforgeeks.org/d3-js-group-method/ https://github.com/d3/d3-array
     ([key, values]) => ({ key, values }) // [{A:[]}, {B:[]}]
@@ -94,8 +166,9 @@ function draw(rowData) {
   //   .range("#FF0000", "#009933", "#0000FF");
   const colorScale = d3.scaleOrdinal(d3.schemeCategory10); // 使用自带比例尺
   // g 分组区分优先级，后创建的元素会覆盖前面创建 g
-  const lineG = svg.append("g"); // 创建一个线条容器
-  const tooltipG = svg.append("g").style("display", "none"); // 创建一个 tooltip 容器
+  const lineG = lineChart.append("g"); // 创建一个线条容器 提前创建防止遮挡
+  // const line2G = context.append("g").attr("class", "axis axis--x"); // 创建一个线条容器
+  const tooltipG = lineChart.append("g").style("display", "none"); // 创建一个 tooltip 容器
   const activeStatus = {}; // 点击展示 or 隐藏线条
   // const tooltipWidth = 124;
   // const tooltipHeight = 32;
@@ -110,12 +183,20 @@ function draw(rowData) {
       .attr("fill", "none")
       .attr("stroke-linejoin", "round")
       .attr("stroke-linecap", "round")
-      .attr("d", line(item.values));
-    // .datum(item.value)
-    // .attr("d", line) //写法2
+      // .attr("d", line(item.values)); // 这种写法导致缩放 brushed 方法报错
+      .datum(item.values)
+      .attr("d", line);
+
+    context
+      .append("path")
+      .attr("stroke", () => colorScale(item.key)) // 设置颜色同时把颜色加到数据中
+      .attr("fill", "none")
+      // .attr("d", line2(item.values))
+      .datum(item.values)
+      .attr("d", line2);
 
     // 渐变
-    const areaGradient = svg
+    const areaGradient = lineChart
       .append("defs")
       .append("linearGradient")
       .attr("id", "lg" + item.key.replace(/\s+/g, ""))
@@ -129,8 +210,9 @@ function draw(rowData) {
       .attr("stop-color", item.color)
       .attr("stop-opacity", 0.3);
     areaGradient.append("stop").attr("offset", "80%").attr("stop-color", "#fff").attr("stop-opacity", 0);
-    svg
+    lineG
       .append("path")
+      .attr("class", "line-lg")
       .datum(item.values)
       .attr("id", "area" + item.key.replace(/\s+/g, "")) // assign an ID 用于隐藏等操作
       .style("fill", `url(#lg${item.key.replace(/\s+/g, "")})`)
@@ -206,19 +288,65 @@ function draw(rowData) {
       .style("font-size", "12px")
       .style("fill", "#333");
   });
+
+  // 缩放 x 轴
+  const brush = d3
+    .brushX()
+    .extent([
+      [0, 0],
+      [width, height2],
+    ])
+    .on("brush end", brushed);
+
+  const zoom = d3
+    .zoom()
+    .scaleExtent([1, Infinity])
+    .translateExtent([
+      [0, 0],
+      [width, height],
+    ])
+    .extent([
+      [0, 0],
+      [width, height],
+    ])
+    .on("zoom", zoomed);
+
+  // 下方 缩放区灰色层，用于拖拽
+  context.append("g").attr("class", "brush").call(brush).call(brush.move, xScale.range());
+  function brushed(event) {
+    if (event.sourceEvent && event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
+    var s = event.selection || xScale2.range();
+    xScale.domain(s.map(xScale2.invert, xScale2));
+    lineChart.selectAll(".line").attr("d", line); // 线条缩放
+    lineChart.selectAll(".line-lg").attr("d", area); // 渐变区缩放
+    focus.select(".axis--x").call(xAxis);
+    svg
+      .select(".zoom")
+      .call(zoom.transform, d3.zoomIdentity.scale(width / (s[1] - s[0])).translate(-s[0], 0));
+  }
+  function zoomed(event) {
+    if (event.sourceEvent && event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
+    var t = event.transform;
+    xScale.domain(t.rescaleX(xScale2).domain());
+    lineChart.selectAll(".line").attr("d", line);
+    lineChart.selectAll(".line-lg").attr("d", area); // 渐变区缩放
+    focus.select(".axis--x").call(xAxis);
+    // 鼠标滚轮缩放图表，更新滑块
+    context.select(".brush").call(brush.move, xScale.range().map(t.invertX, t));
+  }
   // 添加 tooltip
-  // append the rectangle to capture mouse 附加矩形以捕获鼠标
-  svg
+  // append the rectangle to capture mouse 附加矩形以捕获鼠标，缩放、鼠标跟随等
+  lineChart
     .append("rect")
     .attr("width", width) // 矩形正好覆盖折线图区域，超出会报错
     .attr("height", height)
     .style("fill", "none")
     .style("pointer-events", "all")
     .style("cursor", "pointer")
+    .call(zoom)
     .on("mouseover", () => tooltipG.style("display", null))
     .on("mouseout", () => tooltipG.style("display", "none"))
     .on("mousemove", mousemove);
-
   const bisectDate = d3.bisector((d) => d.date).left;
   // 鼠标移动 tooltip 跟随
   function mousemove(event) {
@@ -262,28 +390,8 @@ function draw(rowData) {
     });
   }
 
-  // 坐标轴绘制
-  const xAxis = svg
-    .append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .attr("class", "x-axis")
-    .call(
-      d3
-        .axisBottom(xScale)
-        .ticks(10) // 设置x轴刻度数量
-        .tickFormat(d3.timeFormat("%m/%d")) // 设置x轴label的格式
-        .tickSizeOuter(0)
-    );
-  xAxis.attr("class", "line-axis"); // 设置 class 修改颜色等样式
-  // Add the Y Axis
-  const yAxis = svg
-    .append("g")
-    .call(d3.axisLeft(yScale).ticks(5)) // 设置y轴刻度数量
-    .call((g) => g.select(".domain").remove()); // 移除 y 轴
-  yAxis.attr("class", "line-axis"); // 设置 class 修改颜色等样式
-
   //绘制 legend
-  const legend = svg
+  const legend = lineChart
     .append("g")
     .selectAll(".legend")
     .data(colorScale.domain())
@@ -320,6 +428,6 @@ function draw(rowData) {
     .attr("y", 4)
     .attr("fill", "#8F9BB3")
     .style("font-size", "0.65em")
-    .text((d) => d);
+    .text((d) => d); 
 }
 draw(lines);
