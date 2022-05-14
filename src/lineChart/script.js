@@ -47,7 +47,7 @@ const lines = [
   { date: "2022-5-27", value: "567", symbol: "C" },
   { date: "2022-5-28", value: "553", symbol: "C" },
 ];
-
+// TODO:点击隐藏 缩放上下文
 function draw(rowData) {
   // Set the dimensions of the canvas / graph
   const margin = { top: 20, right: 66, bottom: 30, left: 40 },
@@ -97,8 +97,8 @@ function draw(rowData) {
   // g 分组区分优先级，后创建的元素会覆盖前面创建 g
   const lineG = svg.append("g"); // 创建一个线条容器
   const tooltipG = svg.append("g").style("display", "none"); // 创建一个 tooltip 容器
-  const tooltipWidth = 124;
-  const tooltipHeight = 32;
+  // const tooltipWidth = 124;
+  // const tooltipHeight = 32;
   dataNest.forEach((item, i) => {
     // 画线
     lineG
@@ -224,7 +224,15 @@ function draw(rowData) {
       const index = bisectDate(item.values, x0, 1); // 获取鼠标位置附近的数据索引
       const d0 = item.values[index - 1]; // 获取鼠标位左侧的数据
       const d1 = item.values[index]; // 获取鼠标点击位置的数据
-      const d = x0 - d0.date > d1.date - x0 ? d1 : d0; // 获取离鼠标位置近的的数据
+      let d;
+      d0 && d1 && (d = x0 - d0.date > d1.date - x0 ? d1 : d0); // 获取离鼠标位置近的的数据
+      const display = d ? null : "none"; // 如果没有数据，则隐藏 tooltip
+      tooltipG.select("circle.tooltip" + i).style("display", display);
+      tooltipG.select("text.tooltip-text-back" + i).style("display", display);
+      tooltipG.select("text.tooltip" + i).style("display", display);
+      tooltipG.select("line.tooltip-x" + i).style("display", display);
+      tooltipG.select("line.tooltip-y" + i).style("display", display);
+      if (!d) return;
       // tooltipG
       //   .select("rect.tooltip" + i)
       //   .attr("transform", "translate(" + xScale(d.date) + "," + yScale(d.value) + ")")
