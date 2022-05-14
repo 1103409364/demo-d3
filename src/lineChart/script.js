@@ -166,15 +166,26 @@ function draw(rowData) {
       .attr("stroke-width", "1px")
       .style("stroke-dasharray", "5,5"); //dashed array for line
     //矩形
+    // tooltipG
+    //   .append("rect")
+    //   .attr("class", "tooltip" + i)
+    //   .attr("rx", "3") // 圆角
+    //   .attr("ry", "3") // 圆角
+    //   .style("fill", "#fff")
+    //   .style("filter", "drop-shadow(0 0 5px rgba(3, 3, 3, 0.15))")
+    //   .attr("width", tooltipWidth)
+    //   .attr("height", tooltipHeight);
+    // 文字背景 原理是画一个粗笔的文字作为背景放在文字后面
     tooltipG
-      .append("rect")
-      .attr("class", "tooltip" + i)
-      .attr("rx", "3") // 圆角
-      .attr("ry", "3") // 圆角
-      .style("fill", "#fff")
-      .style("filter", "drop-shadow(0 0 5px rgba(3, 3, 3, 0.15))")
-      .attr("width", tooltipWidth)
-      .attr("height", tooltipHeight);
+      .append("text")
+      .attr("class", "tooltip-text-back" + i)
+      .attr("dy", "0.4em")
+      .attr("dx", "1em")
+      .attr("stroke", "#fff") // 笔画颜色
+      .attr("stroke-width", 5)
+      .attr("stroke-linejoin", "round")
+      .style("font-size", "12px")
+      .attr("fill", "none");
     // 文字
     tooltipG
       .append("text")
@@ -208,15 +219,19 @@ function draw(rowData) {
       const d0 = item.values[index - 1]; // 获取鼠标位左侧的数据
       const d1 = item.values[index]; // 获取鼠标点击位置的数据
       const d = x0 - d0.date > d1.date - x0 ? d1 : d0; // 获取离鼠标位置近的的数据
-      tooltipG
-        .select("rect.tooltip" + i)
-        .attr("transform", "translate(" + xScale(d.date) + "," + yScale(d.value) + ")")
-        .attr("x", 8)
-        .attr("y", -tooltipHeight / 2);
+      // tooltipG
+      //   .select("rect.tooltip" + i)
+      //   .attr("transform", "translate(" + xScale(d.date) + "," + yScale(d.value) + ")")
+      //   .attr("x", 8)
+      //   .attr("y", -tooltipHeight / 2);
       tooltipG
         .select("circle.tooltip" + i)
         .attr("transform", "translate(" + xScale(d.date) + "," + yScale(d.value) + ")");
       // 要两条线？一条线当天可能没数据
+      tooltipG
+        .select("text.tooltip-text-back" + i)
+        .text(d.value)
+        .attr("transform", "translate(" + xScale(d.date) + "," + yScale(d.value) + ")");
       tooltipG
         .select("text.tooltip" + i)
         .text(d.value) // "安全事件：" +
