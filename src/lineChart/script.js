@@ -78,10 +78,10 @@ function draw(rowData) {
 
   // Group the entries by symbol
   const dataNest = Array.from(
-    d3.group(rowData, (d) => d.symbol), // {A:[], B:[]}
+    d3.group(rowData, (d) => d.symbol), // {A=>[], B=>[]} InternMap https://www.geeksforgeeks.org/d3-js-group-method/ https://github.com/d3/d3-array
     ([key, values]) => ({ key, values }) // [{A:[]}, {B:[]}]
   );
-
+  console.log(d3.group(rowData, (d) => d.symbol));
   // 创建自己的颜色比例尺
   // var color = d3.scale
   //   .ordinal()
