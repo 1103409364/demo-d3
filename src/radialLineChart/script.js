@@ -1,26 +1,29 @@
 function monthDiff(dateFrom, dateTo) {
   if (dateFrom && dateTo) {
-    return Math.abs(
-      dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear())
+    return (
+      1 +
+      Math.abs(
+        dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear())
+      )
     );
   } else {
     return 0;
   }
 }
-// 闰年判断
-function isLeapYear(year) {
-  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-}
-// 计算日期当天占当年de百分比
-function percentOfYear(date) {
-  if (!date) return 0;
-  var fullYear = date.getFullYear();
-  var diff = date - new Date(fullYear, 0, 0);
-  var oneDay = 1000 * 60 * 60 * 24;
-  var numDays = Math.ceil(diff / oneDay);
-  var numDaysInYear = isLeapYear(fullYear) ? 366 : 365;
-  return numDays / numDaysInYear;
-}
+// // 闰年判断
+// function isLeapYear(year) {
+//   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+// }
+// // 计算日期当天占当年de百分比
+// function percentOfYear(date) {
+//   if (!date) return 0;
+//   var fullYear = date.getFullYear();
+//   var diff = date - new Date(fullYear, 0, 0);
+//   var oneDay = 1000 * 60 * 60 * 24;
+//   var numDays = Math.ceil(diff / oneDay);
+//   var numDaysInYear = isLeapYear(fullYear) ? 366 : 365;
+//   return numDays / numDaysInYear;
+// }
 
 function draw(data) {
   var width = 500; // this.$refs.radialChartRef.clientWidth; //- margin.left - margin.right;
@@ -54,7 +57,7 @@ function draw(data) {
   var xExtend = d3.extent([...data.line1.map((d) => d.date), ...data.line2.map((d) => d.date)]);
   var yExtend = d3.extent([...data.line1.map((d) => d.value), ...data.line2.map((d) => d.value)]);
   var fullCircle = 2 * Math.PI;
-  var diffAngle = (2 * Math.PI * percentOfYear(xExtend[0])) / 12; //((xExtend[0].getMonth()) / 12) * Math.PI;
+  var diffAngle = Math.PI / 2; // 坐标轴差90度。 (2 * Math.PI * percentOfYear(xExtend[0])) / 12; //((xExtend[0].getMonth()) / 12) * Math.PI;
   var x = d3.scaleTime().range([0 - diffAngle, fullCircle - diffAngle]); // 0 - 2π 导致 invert 出来的时间不对，需要计算差值
   var y = d3.scaleRadial().range([innerRadius, outerRadius]);
 
@@ -220,7 +223,7 @@ function draw(data) {
     .attr("ry", "3")
     .style("font-size", 10)
     .style("display", function (d) {
-      return formatMonth(d) === formatMonth(new Date) ? "block" : "none";
+      return formatMonth(d) === formatMonth(new Date()) ? "block" : "none";
     }); // x轴文字背景
 
   xTick
@@ -235,10 +238,10 @@ function draw(data) {
       return formatDate(d);
     })
     .style("font-size", function (d) {
-      return formatMonth(d) === formatMonth(new Date) ? 11 : 12;
+      return formatMonth(d) === formatMonth(new Date()) ? 11 : 12;
     })
     .style("fill", function (d) {
-      return formatMonth(d) === formatMonth(new Date) ? "#AB92F9" : "#8F9BB3";
+      return formatMonth(d) === formatMonth(new Date()) ? "#AB92F9" : "#8F9BB3";
     });
   //.attr('opacity', 0.8); // x轴刻度文字
 
@@ -282,9 +285,10 @@ function draw(data) {
     .duration(3000)
     .ease(d3.easeLinear)
     .attr("stroke-dashoffset", 0);
+  // tooltip 鼠标事件捕获层
   svg
     .append("circle")
-    .style("fill", "rgba(33, 150, 243, 0.2)")
+    .style("fill", "none")
     .style("pointer-events", "all")
     .style("cursor", "pointer")
     .attr("r", outerRadius)
@@ -292,14 +296,115 @@ function draw(data) {
     // .on("mouseover", () => tooltipG.style("display", null))
     // .on("mouseout", () => tooltipG.style("display", "none"))
     .on("mousemove", mousemove);
+  const tooltipG = svg.append("g"); //.style("display", "none"); // 创建一个 tooltip 容器
+  // 圆点 焦点
+  tooltipG
+    .append("circle")
+    .attr("class", "tooltip" + 1) // 添加 class 用于调整位置
+    .style("fill", "#fff")
+    .style("stroke", lin1Color)
+    .style("stroke-width", 2)
+    .attr("r", 4);
+  // x 提示线
+  tooltipG
+    .append("line")
+    .attr("class", "tooltip-x" + 1)
+    .attr("x1", 0)
+    .attr("y2", 0)
+    .attr("x2", 0)
+    .attr("y2", outerRadius)
+    .attr("stroke", "#333")
+    .attr("stroke-width", "1px")
+    .style("stroke-dasharray", "5,5"); //dashed array for line
+  // y 提示线
+  tooltipG
+    .append("circle")
+    .style("fill", "none")
+    .attr("class", "tooltip-y" + 1)
+    .attr("stroke", lin1Color)
+    .attr("stroke-width", "1px")
+    .style("stroke-dasharray", "5,5")
+    .attr("r", outerRadius); //dashed array for line
+  // //矩形
+  // // tooltipG
+  // //   .append("rect")
+  // //   .attr("class", "tooltip" + i)
+  // //   .attr("rx", "3") // 圆角
+  // //   .attr("ry", "3") // 圆角
+  // //   .style("fill", "#fff")
+  // //   .style("filter", "drop-shadow(0 0 5px rgba(3, 3, 3, 0.15))")
+  // //   .attr("width", tooltipWidth)
+  // //   .attr("height", tooltipHeight);
+  // 文字背景 原理是画一个粗笔的文字作为背景放在文字后面
+  tooltipG
+    .append("text")
+    .attr("class", "tooltip-text-back" + 1)
+    .attr("dy", "0.4em")
+    .attr("dx", "1em")
+    .attr("stroke", "#fff") // 笔画颜色
+    .attr("stroke-width", 5)
+    .attr("stroke-linejoin", "round")
+    .style("font-size", "12px")
+    .attr("fill", "none");
+  // 文字
+  tooltipG
+    .append("text")
+    .attr("class", "tooltip" + 1)
+    .attr("dy", "0.4em")
+    // .attr('text-anchor', 'middle')
+    .attr("dx", "1em")
+    .style("font-family", "Arial")
+    // .style('text-shadow','1px 1px 1px #333')
+    .style("font-size", "12px")
+    .style("fill", "#333");
 
   const bisectDate = d3.bisector((d) => d.date).left;
   // 两个误差：1 比例尺要根据起始日期计算 range 值域，否则 invert 出来的日期不对 2 坐标轴差 90度
   function mousemove(event) {
     const point = d3.pointer(event, this); // Math.atan2(point[0], point[1])
-    var x0 = x.invert(Math.atan2(point[1], point[0]) + Math.PI / 2); // 通过鼠标位置像素值获取鼠标点击位置的x坐标数据值 极坐标需要转换成角度
+    let radian = 0;
+    radian = Math.atan2(point[1], point[0]);
+    var x0 = x.invert(radian + Math.PI / 2); // 通过鼠标位置像素值获取鼠标点击位置的x坐标数据值 极坐标需要转换成角度
     const index = bisectDate(data.line1, x0, 1);
+    const d0 = data.line1[index - 1]; // 获取鼠标位左侧的数据
+    const d1 = data.line1[index]; // 获取鼠标点击位置的数据
+    let d;
+    d0 && d1 && (d = x0 - d0.date > d1.date - x0 ? d1 : d0); // 获取离鼠标位置近的的数据
+    // const display = d && activeStatus[item.key] ? null : "none"; // 如果没有数据，则隐藏 tooltip
     // console.log(index, x0.toLocaleDateString());
+    console.log(x0.toLocaleDateString());
+    tooltipG
+      .select("circle.tooltip" + 1)
+      .attr(
+        "transform",
+        "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
+      );
+    tooltipG
+      .select("text.tooltip-text-back" + 1)
+      .text(d.value) // "安全事件：" +
+      .attr(
+        "transform",
+        "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
+      ); // 文字方向调整参考 233 行
+    tooltipG
+      .select("text.tooltip" + 1)
+      .text(d.value) // "安全事件：" +
+      .attr(
+        "transform",
+        "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
+      ); // 文字方向调整参考 233 行
+    // "translate(" + x(d.date) + "," + y(d.value) + ")");
+    tooltipG
+      .select("line.tooltip-x" + 1)
+      .attr("transform", "rotate(" + ((x(d.date) * 180) / Math.PI + 180) + ")");
+    tooltipG
+      .select("line.tooltip-y" + 1)
+      .attr("r", y(d.value))
+      .enter();
+    // .attr(
+    //   "transform",
+    //   "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
+    // );
   }
 }
 // d3.select(".title").text("更新text");
