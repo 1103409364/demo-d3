@@ -297,12 +297,12 @@ function draw(data) {
     // .on("mouseout", () => tooltipG.style("display", "none"))
     .on("mousemove", mousemove);
   const tooltipG = svg.append("g"); //.style("display", "none"); // 创建一个 tooltip 容器
-  // 圆点 焦点
+  // 圆点 交点
   tooltipG
     .append("circle")
     .attr("class", "tooltip" + 1) // 添加 class 用于调整位置
     .style("fill", "#fff")
-    .style("stroke", lin1Color)
+    .style("stroke", "red")
     .style("stroke-width", 2)
     .attr("r", 4);
   // x 提示线
@@ -321,10 +321,10 @@ function draw(data) {
     .append("circle")
     .style("fill", "none")
     .attr("class", "tooltip-y" + 1)
-    .attr("stroke", lin1Color)
+    .attr("stroke", "#333") // 设置线条颜色
     .attr("stroke-width", "1px")
     .style("stroke-dasharray", "5,5")
-    .attr("r", outerRadius); //dashed array for line
+    .attr("r", innerRadius); //dashed array for line
   // //矩形
   // // tooltipG
   // //   .append("rect")
@@ -375,20 +375,26 @@ function draw(data) {
     console.log(x0.toLocaleDateString());
     tooltipG
       .select("circle.tooltip" + 1)
+      .transition()
+      .duration(100)
       .attr(
         "transform",
         "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
       );
     tooltipG
       .select("text.tooltip-text-back" + 1)
-      .text(d.value) // "安全事件：" +
+      .transition()
+      .duration(100)
+      .text(d.value) // 文字内容
       .attr(
         "transform",
         "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
       ); // 文字方向调整参考 233 行
     tooltipG
       .select("text.tooltip" + 1)
-      .text(d.value) // "安全事件：" +
+      .transition()
+      .duration(100)
+      .text(d.value)
       .attr(
         "transform",
         "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
@@ -396,15 +402,14 @@ function draw(data) {
     // "translate(" + x(d.date) + "," + y(d.value) + ")");
     tooltipG
       .select("line.tooltip-x" + 1)
+      .transition()
+      .duration(100)
       .attr("transform", "rotate(" + ((x(d.date) * 180) / Math.PI + 180) + ")");
     tooltipG
-      .select("line.tooltip-y" + 1)
-      .attr("r", y(d.value))
-      .enter();
-    // .attr(
-    //   "transform",
-    //   "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
-    // );
+      .select("circle.tooltip-y" + 1)
+      .transition()
+      .duration(100)
+      .attr("r", y(d.value)); //选择设置半径，视图自动更新
   }
 }
 // d3.select(".title").text("更新text");
