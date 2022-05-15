@@ -371,21 +371,31 @@ function draw(rowData) {
       //   .attr("y", -tooltipHeight / 2);
       tooltipG
         .select("circle.tooltip" + i)
+        .transition()
+        .duration(1)
         .attr("transform", "translate(" + xScale(d.date) + "," + yScale(d.value) + ")");
       // 要两条线？一条线当天可能没数据
       tooltipG
         .select("text.tooltip-text-back" + i)
+        .transition()
+        .duration(1)
         .text(d.value)
         .attr("transform", "translate(" + xScale(d.date) + "," + yScale(d.value) + ")");
       tooltipG
         .select("text.tooltip" + i)
+        .transition()
+        .duration(1)
         .text(d.value) // "安全事件：" +
         .attr("transform", "translate(" + xScale(d.date) + "," + yScale(d.value) + ")");
       tooltipG
         .select("line.tooltip-x" + i)
+        .transition()
+        .duration(1)
         .attr("transform", "translate(" + xScale(d.date) + "," + 0 + ")");
       tooltipG
         .select("line.tooltip-y" + i)
+        .transition()
+        .duration(1)
         .attr("transform", "translate(" + 0 + "," + yScale(d.value) + ")");
     });
   }
@@ -428,6 +438,6 @@ function draw(rowData) {
     .attr("y", 4)
     .attr("fill", "#8F9BB3")
     .style("font-size", "0.65em")
-    .text((d) => d); 
+    .text((d) => d);
 }
 draw(lines);
