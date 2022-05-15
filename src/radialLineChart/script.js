@@ -211,9 +211,9 @@ function draw(data) {
   xTick
     .append("rect")
     .attr("x", 3)
-    .attr("y", -15)
+    .attr("y", -24)
     .attr("width", 15)
-    .attr("height", 30)
+    .attr("height", 48)
     .attr("fill", "none")
     .attr("stroke", "#AB92F9")
     .attr("rx", "3") // 圆角
