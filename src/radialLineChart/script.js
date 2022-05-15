@@ -24,7 +24,7 @@ function monthDiff(dateFrom, dateTo) {
 //   var numDaysInYear = isLeapYear(fullYear) ? 366 : 365;
 //   return numDays / numDaysInYear;
 // }
-
+// TODO: 多条线使用数组遍历减少重复代码
 function draw(data) {
   var width = 500; // this.$refs.radialChartRef.clientWidth; //- margin.left - margin.right;
   var height = width; //this.$refs.radialChartRef.clientHeight; //˝- margin.top - margin.bottom;
@@ -382,23 +382,37 @@ function draw(data) {
         "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
       );
     tooltipG
-      .select("text.tooltip-text-back" + 1)
+      .select("text.tooltip-text-back" + 1) // 文字背景
       .transition()
       .duration(100)
-      .text(d.value) // 文字内容
-      .attr(
-        "transform",
-        "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
-      ); // 文字方向调整参考 233 行
+      .text(d.value) // 文字
+      .attr("transform", () => {
+        console.log(x(d.date));
+        var deg = (x(d.date) * 180) / Math.PI - 90;
+        var rx = y(d.value);
+        var pointX = x(d.date);
+        if (pointX < 0 || pointX > 3.14) {
+          deg = deg + 180;
+          rx = -rx;
+        }
+        return "rotate(" + deg + ")translate(" + rx + ",0)";
+      }); // 文字方向调整
     tooltipG
       .select("text.tooltip" + 1)
       .transition()
       .duration(100)
       .text(d.value)
-      .attr(
-        "transform",
-        "rotate(" + ((x(d.date) * 180) / Math.PI - 90) + ")translate(" + y(d.value) + ",0)"
-      ); // 文字方向调整参考 233 行
+      .attr("transform", () => {
+        console.log(x(d.date));
+        var deg = (x(d.date) * 180) / Math.PI - 90;
+        var rx = y(d.value);
+        var pointX = x(d.date);
+        if (pointX < 0 || pointX > 3.14) {
+          deg = deg + 180;
+          rx = -rx;
+        }
+        return "rotate(" + deg + ")translate(" + rx + ",0)";
+      }); // 文字方向调整
     // "translate(" + x(d.date) + "," + y(d.value) + ")");
     tooltipG
       .select("line.tooltip-x" + 1)
