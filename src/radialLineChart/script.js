@@ -1,6 +1,27 @@
 function monthDiff(dateFrom, dateTo) {
-  return dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear());
+  if (dateFrom && dateTo) {
+    return Math.abs(
+      dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear())
+    );
+  } else {
+    return 0;
+  }
 }
+// 闰年判断
+function isLeapYear(year) {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+}
+// 计算日期当天占当年de百分比
+function percentOfYear(date) {
+  if (!date) return 0;
+  var fullYear = date.getFullYear();
+  var diff = date - new Date(fullYear, 0, 0);
+  var oneDay = 1000 * 60 * 60 * 24;
+  var numDays = Math.ceil(diff / oneDay);
+  var numDaysInYear = isLeapYear(fullYear) ? 366 : 365;
+  return numDays / numDaysInYear;
+}
+
 function draw(data) {
   var width = 500; // this.$refs.radialChartRef.clientWidth; //- margin.left - margin.right;
   var height = width; //this.$refs.radialChartRef.clientHeight; //˝- margin.top - margin.bottom;
@@ -8,7 +29,6 @@ function draw(data) {
   var lin1ColorFill = "rgb(255, 190, 35, 0.3)";
   var lin2Color = "rgb(56, 129, 255)";
   var lin2ColorFill = "rgb(56, 129, 255, 0.4)";
-  var monthCur = new Date().getMonth() + 1;
 
   var svg = d3
     .select("#radial-line-chart")
@@ -20,10 +40,22 @@ function draw(data) {
   var innerRadius = 80; // 内圆半径
   var outerRadius = Math.min(width, height) / 2 - 5; // 外圆半径
   var parseTime = d3.timeParse("%Y-%m-%d");
-  var formatMonth = d3.timeFormat("%m");
-  var fullCircle = 2 * Math.PI;
+  var formatMonth = d3.timeFormat("%Y-%m");
+  var formatDate = d3.timeFormat("%Y-%m");
 
-  var x = d3.scaleTime().range([0, fullCircle]);
+  data.line1.forEach(function (data) {
+    data.date = parseTime(data.date);
+    data.value = +data.value;
+  });
+  data.line2.forEach(function (data) {
+    data.date = parseTime(data.date);
+    data.value = +data.value;
+  });
+  var xExtend = d3.extent([...data.line1.map((d) => d.date), ...data.line2.map((d) => d.date)]);
+  var yExtend = d3.extent([...data.line1.map((d) => d.value), ...data.line2.map((d) => d.value)]);
+  var fullCircle = 2 * Math.PI;
+  var diffAngle = (2 * Math.PI * percentOfYear(xExtend[0])) / 12; //((xExtend[0].getMonth()) / 12) * Math.PI;
+  var x = d3.scaleTime().range([0 - diffAngle, fullCircle - diffAngle]); // 0 - 2π 导致 invert 出来的时间不对，需要计算差值
   var y = d3.scaleRadial().range([innerRadius, outerRadius]);
 
   var lineRadial = d3
@@ -35,22 +67,9 @@ function draw(data) {
       return y(d.value);
     });
 
-  // d3.json('data2.json').then(
-  //     function (data) {
-  data.line1.forEach(function (data) {
-    data.date = parseTime(data.date);
-    data.value = +data.value;
-  });
-  data.line2.forEach(function (data) {
-    data.date = parseTime(data.date);
-    data.value = +data.value;
-  });
-
-  var xExtend = d3.extent([...data.line1.map((d) => d.date), ...data.line2.map((d) => d.date)]);
-  var xTickNum = monthDiff(xExtend[0], xExtend[1]) || 12; // x轴刻度数量
+  // console.log(xExtend[0].toLocaleDateString(), xExtend[1].toLocaleDateString());
   x.domain(xExtend); // 设置坐标轴定义域
   // 计算y轴的范围
-  var yExtend = d3.extent([...data.line1.map((d) => d.value), ...data.line2.map((d) => d.value)]);
   yExtend[1] = +yExtend[1] + (+yExtend[1] - +yExtend[0]) * 0.2; // 增加20%的范围 以便显示完整刻度
   y.domain(yExtend); // 设置y轴定义域
 
@@ -169,6 +188,7 @@ function draw(data) {
     }); // y轴文字
 
   // x轴
+  var xTickNum = monthDiff(xExtend[0], xExtend[1]) || 12; // x轴刻度数量
   var xAxis = svg.append("g");
   var xTick = xAxis
     .selectAll("g")
@@ -200,7 +220,7 @@ function draw(data) {
     .attr("ry", "3")
     .style("font-size", 10)
     .style("display", function (d) {
-      return +formatMonth(d) === monthCur ? "block" : "none";
+      return formatMonth(d) === formatMonth(new Date) ? "block" : "none";
     }); // x轴文字背景
 
   xTick
@@ -212,13 +232,13 @@ function draw(data) {
         : "rotate(-90)translate(0, 15)";
     })
     .text(function (d) {
-      return formatMonth(d) + "月";
+      return formatDate(d);
     })
     .style("font-size", function (d) {
-      return +formatMonth(d) === monthCur ? 11 : 12;
+      return formatMonth(d) === formatMonth(new Date) ? 11 : 12;
     })
     .style("fill", function (d) {
-      return +formatMonth(d) === monthCur ? "#AB92F9" : "#8F9BB3";
+      return formatMonth(d) === formatMonth(new Date) ? "#AB92F9" : "#8F9BB3";
     });
   //.attr('opacity', 0.8); // x轴刻度文字
 
@@ -262,7 +282,30 @@ function draw(data) {
     .duration(3000)
     .ease(d3.easeLinear)
     .attr("stroke-dashoffset", 0);
+  svg
+    .append("circle")
+    .style("fill", "rgba(33, 150, 243, 0.2)")
+    .style("pointer-events", "all")
+    .style("cursor", "pointer")
+    .attr("r", outerRadius)
+    // .call(zoom)
+    // .on("mouseover", () => tooltipG.style("display", null))
+    // .on("mouseout", () => tooltipG.style("display", "none"))
+    .on("mousemove", mousemove);
+
+  const bisectDate = d3.bisector((d) => d.date).left;
+  // 两个误差：1 比例尺要根据起始日期计算 range 值域，否则 invert 出来的日期不对 2 坐标轴差 90度
+  function mousemove(event) {
+    const point = d3.pointer(event, this); // Math.atan2(point[0], point[1])
+    var x0 = x.invert(Math.atan2(point[1], point[0]) + Math.PI / 2); // 通过鼠标位置像素值获取鼠标点击位置的x坐标数据值 极坐标需要转换成角度
+    const index = bisectDate(data.line1, x0, 1);
+    // console.log(index, x0.toLocaleDateString());
+  }
 }
 // d3.select(".title").text("更新text");
 // Prep the tooltip bits, initial display is hidden
-d3.json("data2.json").then((data) => draw(data));
+d3.json("data2.json").then((data) => {
+  data.line1 = data.line1.sort((a, b) => (a.date - b.date ? 1 : -1));
+  data.line2 = data.line2.sort((a, b) => (a.date - b.date ? 1 : -1));
+  draw(data);
+});
