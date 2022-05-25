@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style type="text/css">
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      #myCharts1 {
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+      #myCharts2 {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 2;
+        background-color: rgba(255, 255, 255);
+      }
+      .down1 {
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        background-color: red;
+        z-index: 9;
+      }
+      .down2 {
+        position: absolute;
+        right: 100px;
+        bottom: 10px;
+        background-color: red;
+        z-index: 9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="down1">下载1</div>
+    <div class="down2">下载2</div>
+    <div id="myCharts1"></div>
+    <div id="myCharts2"></div>
+
+    <!-- <script src="./js/echarts-5.0.2.js"></script> -->
+    <script
+      type="text/javascript"
+      src="https://fastly.jsdelivr.net/npm/echarts@5.3.2/dist/echarts.min.js"
+    ></script>
+    <script type="text/javascript">
+      //初始化echarts实例
+      var myChart1 = null; // echarts.init(document.getElementById("myCharts1"));
+      var myChart2 = echarts.init(document.getElementById("myCharts2"));
+
+      var datas = [
+        {
+          name: "文献",
+          id: "3",
+          category: 3,
+          draggable: true,
+        },
+        {
+          name: "机构",
+          id: "2",
+          category: 2,
+          draggable: true,
+        },
+        {
+          name: "项目",
+          id: "0",
+          draggable: true,
+        },
+        {
+          name: "人员",
+          id: "1",
+          category: 1,
+          draggable: true,
+        },
+        {
+          name: "人员1",
+          id: "1-1",
+          category: 1,
+          draggable: true,
+        },
+      ];
+      var lines = [
+        {
+          source: "1",
+          target: "1-1",
+          value: "",
+        },
+        {
+          source: "0",
+          target: "1",
+          value: "",
+        },
+        {
+          source: "0",
+          target: "2",
+          value: "",
+        },
+        {
+          source: "0",
+          target: "3",
+          value: "",
+        },
+      ];
+
+      for (let index = 2; index < 20; index++) {
+        datas.push({
+          name: "人员" + index,
+          id: "1-" + index,
+          category: 1,
+          draggable: true,
+        });
+        lines.push({
+          source: "1-" + index,
+          target: "1-" + (index - 1),
+          value: "",
+        });
+      }
+
+      var option = {
+        title: {
+          text: "",
+        },
+        color: ["#BB8FCE", "#0099FF", "#5DADE2"],
+        tooltip: {},
+        animationDurationUpdate: 1500,
+        label: {
+          normal: {
+            show: true,
+            textStyle: {
+              fontSize: 12,
+            },
+          },
+        },
+        series: [
+          {
+            type: "graph",
+            layout: "force", //采用力引导布局
+            symbolSize: 45,
+            legendHoverLink: true, //启用图例 hover 时的联动高亮。
+            focusNodeAdjacency: false, //在鼠标移到节点上的时候突出显示节点以及节点的边和邻接节点。
+            roam: true,
+            label: {
+              normal: {
+                show: true,
+                position: "inside",
+                textStyle: {
+                  fontSize: 12,
+                },
+              },
+            },
+            force: {
+              repulsion: 1000,
+            },
+            edgeSymbolSize: [4, 50],
+            edgeLabel: {
+              normal: {
+                show: true,
+                textStyle: {
+                  fontSize: 10,
+                },
+                formatter: "{c}",
+              },
+            },
+            categories: ["机构", "文献", "人员"],
+            data: datas,
+            links: lines,
+            lineStyle: {
+              normal: {
+                opacity: 0.9,
+                width: 1,
+                curveness: 0,
+              },
+            },
+          },
+        ],
+      };
+
+
+      myChart2.setOption(option);
+      // 底层 canvas 用于下载
+      document.querySelector(".down1").addEventListener("click", () => {
+        myChart1 && myChart1.dispose();
+        myChart1 = echarts.init(document.getElementById("myCharts1"));
+
+        let model = myChart2
+          .getModel()
+          .getSeriesByIndex(0)
+          .getData()._itemLayouts; // 获取上层图表的数据，用于下层渲染后下载
+
+        datas.forEach((item, i) => {
+          item.x = model[i][0];
+          item.y = model[i][1];
+        });
+        option.series[0].data = datas;
+
+        myChart1.setOption(option);
+        myChart1.on("finished", onFinished);
+
+        function onFinished() {
+          const opts = {
+            type: "png", // 导出的格式，可选 png, jpeg
+            pixelRatio: 2, // 导出的图片分辨率比例，默认为 1。
+            // backgroundColor: string, // 导出的图片背景色，默认使用 option 里的 backgroundColor
+          };
+          const resBase64 = myChart1.getDataURL(opts); //拿到base64 地址，就好下载了。
+          let a = document.createElement("a");
+          a.href = resBase64;
+          a.download = "图谱1.png";
+          a.click();
+          myChart1.off("finished", onFinished); // finished 重复触发，需要移除监听
+        }
+      });
+
+      // 上层 canvas 用于展示
+      document.querySelector(".down2").addEventListener("click", () => {
+        var opts = {
+          type: "png", // 导出的格式，可选 png, jpeg
+          pixelRatio: 2, // 导出的图片分辨率比例，默认为 1。
+          // backgroundColor: string, // 导出的图片背景色，默认使用 option 里的 backgroundColor
+        };
+        const resBase64 = myChart2.getDataURL(opts); //拿到base64 地址，就好下载了。
+        let a = document.createElement("a");
+        a.href = resBase64;
+        a.download = "图谱2.png";
+        a.click();
+      });
+
+      // 自适应
+      // window.addEventListener("resize", myChart1.resize);
+    </script>
+  </body>
+</html>
