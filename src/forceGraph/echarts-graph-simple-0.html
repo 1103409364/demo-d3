@@ -3,13 +3,15 @@
 -->
 <!DOCTYPE html>
 <html lang="zh-CN" style="height: 100%">
+
 <head>
   <meta charset="utf-8">
 </head>
+
 <body style="height: 100%; margin: 0">
   <div id="container" style="height: 100%"></div>
 
-  
+
   <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5.3.2/dist/echarts.min.js"></script>
   <!-- Uncomment this line if you want to dataTool extension
   <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5.3.2/dist/extension/dataTool.min.js"></script>
@@ -36,107 +38,130 @@
       useDirtyRect: false
     });
     var app = {};
-    
+
     var option;
 
     option = {
-  title: {
-    text: 'Basic Graph'
-  },
-  tooltip: {},
-  animationDurationUpdate: 1500,
-  animationEasingUpdate: 'quinticInOut',
-  series: [
-    {
-      type: 'graph',
-      layout: 'none',
-      symbolSize: 50,
-      roam: true,
-      label: {
-        show: true
+      title: {
+        text: 'Basic Graph'
       },
-      edgeSymbol: ['circle', 'arrow'],
-      edgeSymbolSize: [4, 10],
-      edgeLabel: {
-        fontSize: 20
-      },
-      data: [
+      tooltip: {},
+      animationDurationUpdate: 1500,
+      animationEasingUpdate: 'quinticInOut',
+      series: [
         {
-          name: 'Node 1',
-          x: 300,
-          y: 300
-        },
-        {
-          name: 'Node 2',
-          x: 800,
-          y: 300
-        },
-        {
-          name: 'Node 3',
-          x: 550,
-          y: 100
-        },
-        {
-          name: 'Node 4',
-          x: 550,
-          y: 500
-        }
-      ],
-      // links: [],
-      links: [
-        {
-          source: 0,
-          target: 1,
-          symbolSize: [5, 20],
+          type: 'graph',
+          layout: 'force',
+          symbolSize: 50,
+          roam: false,
           label: {
             show: true
           },
-          lineStyle: {
-            width: 5,
-            curveness: 0.2
-          }
-        },
-        {
-          source: 'Node 2',
-          target: 'Node 1',
-          label: {
-            show: true
+          edgeSymbol: ['circle', 'arrow'],
+          edgeSymbolSize: [4, 10],
+          edgeLabel: {
+            fontSize: 20
           },
+          data: [
+            {
+              name: 'Node 1',
+            },
+            {
+              name: 'Node 2',
+            },
+            {
+              name: 'Node 3',
+            },
+            {
+              name: 'Node 4',
+            }
+          ],
+          // links: [],
+          links: [
+            {
+              source: 0,
+              target: 1,
+              symbolSize: [5, 20],
+              label: {
+                show: true
+              },
+              lineStyle: {
+                width: 5,
+                curveness: 0.2
+              }
+            },
+            {
+              source: 'Node 2',
+              target: 'Node 1',
+              label: {
+                show: true
+              },
+              lineStyle: {
+                curveness: 0.2
+              }
+            },
+            {
+              source: 'Node 1',
+              target: 'Node 3'
+            },
+            {
+              source: 'Node 2',
+              target: 'Node 3'
+            },
+            {
+              source: 'Node 2',
+              target: 'Node 4'
+            },
+            {
+              source: 'Node 1',
+              target: 'Node 4'
+            }
+          ],
           lineStyle: {
-            curveness: 0.2
-          }
-        },
-        {
-          source: 'Node 1',
-          target: 'Node 3'
-        },
-        {
-          source: 'Node 2',
-          target: 'Node 3'
-        },
-        {
-          source: 'Node 2',
-          target: 'Node 4'
-        },
-        {
-          source: 'Node 1',
-          target: 'Node 4'
+            opacity: 0.9,
+            width: 2,
+            curveness: 0
+          },
+          force: {
+            repulsion: 500,
+            gravity: 0.1,
+            friction: 0.6,
+            edgeLength: 200,
+            layoutAnimation: true
+          },
+          draggable: true,
+          layoutAnimation: false,
         }
-      ],
-      lineStyle: {
-        opacity: 0.9,
-        width: 2,
-        curveness: 0
-      }
-    }
-  ]
-};
+      ]
+    };
 
     if (option && typeof option === 'object') {
       myChart.setOption(option);
     }
 
+    //或者使用echartsInstance. off解绑原来的
+    myChart.on('mouseup', function (params) {
+      console.log(params.event.offsetX);
+      var option = myChart.getOption();
+      option.series[0].data[params.dataIndex].x = params.event.offsetX;
+      option.series[0].data[params.dataIndex].y = params.event.offsetY;
+      option.series[0].data[params.dataIndex].fixed = true;
+      console.log(option.series[0].data);
+
+      let countFixed = 0;
+      option.series[0].data.forEach(element => {
+        if (element.fixed) {
+          countFixed++;
+        }
+      });
+      if (countFixed === option.series[0].data.length) {
+        option.series[0].layout = 'none';
+      }
+      myChart.setOption(option);
+    });
+
     window.addEventListener('resize', myChart.resize);
   </script>
 </body>
+
 </html>
