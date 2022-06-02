@@ -177,16 +177,25 @@ function render(dataSet) {
     .text((d) => d.type);
 
   // Initialize the nodes
-  const node = g1.selectAll(".nodes").data(dataSet.nodes).enter().append("g").attr("class", "nodes");
+  const node = g1
+    .selectAll(".nodes")
+    .data(dataSet.nodes)
+    .enter()
+    .append("g")
+    .attr("class", "nodes")
+    // .classed("nodes", true)
+    .classed("fixed", (d) => d.fx !== undefined);
 
-  node.call(
-    d3
-      .drag() //sets the event listener for the specified typenames and returns the drag behavior.
-      .on("start", dragStarted) //start - after a new pointer becomes active (on mousedown or touchstart).
-      .on("drag", dragged) //drag - after an active pointer moves (on mousemove or touchmove).
-      // 不加 end 的话，拖动后 cpu 占用率高
-      .on("end", dragEnded) //end - after an active pointer becomes inactive (on mouseup, touchend or touchcancel).
-  );
+  node
+    .call(
+      d3
+        .drag() //sets the event listener for the specified typenames and returns the drag behavior.
+        .on("start", dragStarted) //start - after a new pointer becomes active (on mousedown or touchstart).
+        .on("drag", dragged) //drag - after an active pointer moves (on mousemove or touchmove).
+        // 不加 end 的话，拖动后 cpu 占用率高
+        .on("end", dragEnded) //end - after an active pointer becomes inactive (on mouseup, touchend or touchcancel).
+    )
+    .on("click", click);
   // 节点绘制
   node
     .append("circle")
@@ -349,10 +358,16 @@ function render(dataSet) {
       (d) => "M " + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y
     );
   }
-
+  function click(event, d) {
+    delete d.fx;
+    delete d.fy;
+    d3.select(this).classed("fixed", false);
+    simulation.alpha(1).restart();
+  }
   //When the drag gesture starts, the targeted node is fixed to the pointer
   //The simulation is temporarily “heated” during interaction by setting the target alpha to a non-zero value.
   function dragStarted(event, d) {
+    d3.select(this).classed("fixed", true);
     // debugger
     if (!event.active) simulation.alphaTarget(0.3).restart(); // 设置衰减系数，对节点位置移动过程的模拟，数值越高移动越快，数值范围[0, 1] sets the current target alpha to the specified number in the range [0,1].
     d.fy = d.y; //fx - the node’s fixed x-position. Original is null.
@@ -364,13 +379,20 @@ function render(dataSet) {
     d.fx = Math.max(nodeRadius, Math.min(width - nodeRadius, event.x)); // 限制节点的拖拽范围
     d.fy = Math.max(nodeRadius, Math.min(height - nodeRadius, event.y));
   }
+  // Sticky Force Layout 拖拽固定，点击取消
+  // https://observablehq.com/@d3/sticky-force-layout
   //When the drag gesture ends, the targeted node is released and the simulation is re-heated.
   function dragEnded(event, d) {
     if (!event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
+    // d.fx = null;
+    // d.fy = null;
+    d.fx = clamp(event.x, 0, width); // set d.fx = x and d.fy = y while dragging
+    d.fy = clamp(event.y, 0, height);
   }
 
+  function clamp(x, lo, hi) {
+    return x < lo ? lo : x > hi ? hi : x;
+  }
   // 构建颜色比例尺
   function buildColorScale(data) {
     var temp = {};
@@ -443,7 +465,9 @@ document.querySelector("#download-btn").addEventListener("click", download);
 // 下载 svg
 function download() {
   //add xml declaration and serialize
-  var svgData = '<?xml version="1.0" standalone="no"?>\r\n' + (new XMLSerializer()).serializeToString(document.querySelector("svg")); 
+  var svgData =
+    '<?xml version="1.0" standalone="no"?>\r\n' +
+    new XMLSerializer().serializeToString(document.querySelector("svg"));
   //convert svg source to URI data scheme.
   // var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
   var downloadLink = document.createElement("a");
