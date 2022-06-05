@@ -195,7 +195,7 @@ function render(dataSet) {
         // 不加 end 的话，拖动后 cpu 占用率高
         .on("end", dragEnded) //end - after an active pointer becomes inactive (on mouseup, touchend or touchcancel).
     )
-    .on("click", click);
+    .on("dblclick", nodeDBlclick);
   // 节点绘制
   node
     .append("circle")
@@ -358,7 +358,7 @@ function render(dataSet) {
       (d) => "M " + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y
     );
   }
-  function click(event, d) {
+  function nodeDBlclick(event, d) {
     delete d.fx;
     delete d.fy;
     d3.select(this).classed("fixed", false);
