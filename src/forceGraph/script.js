@@ -14,7 +14,7 @@ const dataSet = {
     { id: 11, name: "REPT", label: "Reporting", group: "Team E", runtime: 20 },
     { id: 12, name: "SEDD", label: "State Data", group: "Team A", runtime: 20 },
     { id: 13, name: "SNAP", label: "Snapshot", group: "Team A", runtime: 20 },
-    { id: 10000, name: "freedom", label: "Snapshot", group: "Team A", runtime: 20 },
+    { id: 10000, name: "fre\nedom", label: "Snapshot", group: "Team A", runtime: 20 },
   ],
   links: [
     { source: 1, target: 3, type: "Next -->" },
@@ -195,7 +195,9 @@ function render(dataSet) {
         // 不加 end 的话，拖动后 cpu 占用率高
         .on("end", dragEnded) //end - after an active pointer becomes inactive (on mouseup, touchend or touchcancel).
     )
-    .on("dblclick", nodeDBlclick);
+    .on("dblclick", nodeDBlclick)
+    .on("mouseover", tooltipIn)
+    .on("mouseout", tooltipOut);
   // 节点绘制
   node
     .append("circle")
@@ -364,11 +366,37 @@ function render(dataSet) {
         var rx = bbox.x + bbox.width / 2;
         var ry = bbox.y + bbox.height / 2;
         // rx ry 旋转中心。css 不支持三个参数？
-        return "rotate(180 " + rx + " " + ry + ")"// translate(" + 0 + "," + 15 + ")";
+        return "rotate(180 " + rx + " " + ry + ")"; // translate(" + 0 + "," + 15 + ")";
       } else {
         return "rotate(0)";
       }
     });
+  }
+  // html 部分无法下载
+  // name a variable tooltip, and style it using css properties
+  const tooltip = d3
+    .select("#force-graph")
+    .append("div") // the tooltip always "exists" as its own html div, even when not visible
+    .style("position", "absolute") // the absolute position is necessary so that we can manually define its position later
+    .style("visibility", "hidden") // hide it from default at the start so it only appears on hover
+    .style("background-color", "white")
+    .attr("class", "tooltip");
+
+  function tooltipIn(event, d) {
+    //name a tooltip_in function to call when the mouse hovers a node
+    return tooltip
+      .html("<h4>" + d.id + ":" + d.name + "</h4>") // add an html element with a header tag containing the name of the node.  This line is where you would add additional information like: "<h4>" + d.name + "</h4></br><p>" + d.type + "</p>"  Note the quote marks, pluses and </br>--these are necessary for javascript to put all the data and strings within quotes together properly.  Any text needs to be all one line in .html() here
+      .style("visibility", "visible") // make the tooltip visible on hover
+      .style("top", event.pageY + "px") // position the tooltip with its top at the same pixel location as the mouse on the screen
+      .style("left", event.pageX + "px"); // position the tooltip just to the right of the mouse location
+  }
+  function tooltipOut(event, d) {
+    return (
+      tooltip
+        // .transition()
+        // .duration(500) // give the hide behavior a 50 milisecond delay so that it doesn't jump around as the network moves
+        .style("visibility", "hidden")
+    ); // hide the tooltip when the mouse stops hovering
   }
   function nodeDBlclick(event, d) {
     delete d.fx;
@@ -390,6 +418,7 @@ function render(dataSet) {
   function dragged(event, d) {
     d.fx = Math.max(nodeRadius, Math.min(width - nodeRadius, event.x)); // 限制节点的拖拽范围
     d.fy = Math.max(nodeRadius, Math.min(height - nodeRadius, event.y));
+    tooltipOut(event, d);
   }
   // Sticky Force Layout 拖拽固定，点击取消
   // https://observablehq.com/@d3/sticky-force-layout
