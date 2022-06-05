@@ -68,7 +68,7 @@ function render(dataSet) {
         .id((d) => d.id) // This sets the node id accessor to the specified function. If not specified, will default to the index of a node.
         .distance(120)
     )
-    .force("charge", d3.forceManyBody().strength(-500)) // This adds repulsion (if it's negative) between nodes.
+    .force("charge", d3.forceManyBody().strength(-400)) // This adds repulsion (if it's negative) between nodes.
     .force("center", d3.forceCenter(width / 2, height / 2 + 10)); // 调整在画布中的位置 This force attracts nodes to the center of the svg area
 
   const svg = d3.select("#force-graph").append("svg").attr("viewBox", [0, 0, width, height]);
