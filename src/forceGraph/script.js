@@ -357,6 +357,18 @@ function render(dataSet) {
       "d",
       (d) => "M " + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y
     );
+    // 文本方向倒置修正
+    edgelabels.attr("transform", function (d) {
+      if (d.target.x < d.source.x) {
+        var bbox = this.getBBox();
+        var rx = bbox.x + bbox.width / 2;
+        var ry = bbox.y + bbox.height / 2;
+        // rx ry 旋转中心。css 不支持三个参数？
+        return "rotate(180 " + rx + " " + ry + ")"// translate(" + 0 + "," + 15 + ")";
+      } else {
+        return "rotate(0)";
+      }
+    });
   }
   function nodeDBlclick(event, d) {
     delete d.fx;
