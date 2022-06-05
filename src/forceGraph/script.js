@@ -1,20 +1,20 @@
 const dataSet = {
   nodes: [
-    // 组件名称，标签简称、全称，运行时间等
-    { id: 1, name: "AGGR", label: "Aggregation", group: "Team C", runtime: 20 },
-    { id: 2, name: "ASMT", label: "Assessment Repository", group: "Team A", runtime: 20 },
-    { id: 3, name: "CALC", label: "Final Calc", group: "Team C", runtime: 20 },
-    { id: 4, name: "DEMO", label: "Demographic", group: "Team B", runtime: 20 },
-    { id: 5, name: "ELIG", label: "Eligibility", group: "Team B", runtime: 20 },
-    { id: 6, name: "GOAL", label: "Goal Setting", group: "Team C", runtime: 20 },
-    { id: 7, name: "GROW", label: "Growth Model", group: "Team C", runtime: 20 },
-    { id: 8, name: "LINK", label: "Linkage", group: "Team A", runtime: 20 },
-    { id: 9, name: "MOSL", label: "MOSL", group: "Team A", runtime: 20 },
-    { id: 10, name: "MOTP", label: "MOTP", group: "Team A", runtime: 20 },
-    { id: 11, name: "REPT", label: "Reporting", group: "Team E", runtime: 20 },
-    { id: 12, name: "SEDD", label: "State Data", group: "Team A", runtime: 20 },
-    { id: 13, name: "SNAP", label: "Snapshot", group: "Team A", runtime: 20 },
-    { id: 10000, name: "fre\nedom", label: "Snapshot", group: "Team A", runtime: 20 },
+    // 节点名称，标签简称、全称，运行时间等
+    { id: 1, name: "节点名", label: "Aggregation", group: "Team C", runtime: 20 },
+    { id: 2, name: "节点名称", label: "Assessment Repository", group: "Team A", runtime: 20 },
+    { id: 3, name: "测试", label: "Final Calc", group: "Team C", runtime: 20 },
+    { id: 4, name: "节点名称", label: "Demographic", group: "Team B", runtime: 20 },
+    { id: 5, name: "节点名称", label: "Eligibility", group: "Team B", runtime: 20 },
+    { id: 6, name: "节点名称", label: "Goal Setting", group: "Team C", runtime: 20 },
+    { id: 7, name: "节点名称", label: "Growth Model", group: "Team C", runtime: 20 },
+    { id: 8, name: "节点名称", label: "Linkage", group: "Team A", runtime: 20 },
+    { id: 9, name: "节点名称", label: "MOSL", group: "Team A", runtime: 20 },
+    { id: 10, name: "节点名称", label: "MOTP", group: "Team A", runtime: 20 },
+    { id: 11, name: "节点名称", label: "Reporting", group: "Team E", runtime: 20 },
+    { id: 12, name: "节点名称", label: "State Data", group: "Team A", runtime: 20 },
+    { id: 13, name: "节点名称", label: "Snapshot", group: "Team A", runtime: 20 },
+    { id: 10000, name: "节点名称", label: "Snapshot", group: "Team A", runtime: 20 },
   ],
   links: [
     { source: 1, target: 3, type: "Next -->" },
@@ -214,19 +214,60 @@ function render(dataSet) {
   // 节点 name
   node
     .append("text")
-    .attr("dy", 4)
+    .attr("dy", (d) => d.name.length < 3 ? 0.4 : 0)
     .text((d) => d.name)
     .style("text-anchor", "middle")
     .style("font-size", "10px")
-    .style("pointer-events", "none");
+    .style("pointer-events", "none")
+    .call(wrap, 25);
+  /**
+   * text 文本换行， 中文按字符换行
+   * @param {Text} text
+   * @param {Number} width
+   */
+  function wrap(text, width) {
+    text.each(function () {
+      var text = d3.select(this),
+        characters = text.text().split("").reverse(),
+        character,
+        line = [],
+        // lineNumber = 0,
+        lineHeight = 1, // ems
+        y = text.attr("y"),
+        dy = parseFloat(text.attr("dy")) || 0,
+        tspan = text
+          .text(null)
+          .append("tspan")
+          .attr("x", 0)
+          .attr("y", y)
+          .attr("dy", dy + "em");
+      while ((character = characters.pop())) {
+        line.push(character);
+        tspan.text(line.join(""));
+        if (tspan.node().getComputedTextLength() > width) {
+          line.pop();
+          tspan.text(line.join(""));
+          line = [character];
+          tspan = text
+            .append("tspan")
+            .attr("x", 0)
+            .attr("y", y)
+            // .attr("dy", ++lineNumber * lineHeight + dy + "em")
+            .attr("dy", lineHeight + dy + "em")
+            .attr("font-size", "10px")
+            .text(character);
+        }
+      }
+    });
+  }
   // 节点 runtime
-  node
-    .append("text")
-    .attr("dy", 12)
-    .style("text-anchor", "middle")
-    .style("font-size", "8px")
-    .text((d) => d.runtime)
-    .style("pointer-events", "none");
+  // node
+  //   .append("text")
+  //   .attr("dy", 12)
+  //   .style("text-anchor", "middle")
+  //   .style("font-size", "8px")
+  //   .text((d) => d.runtime)
+  //   .style("pointer-events", "none");
 
   // 建立邻居字典
   var neighborTarget = {};
@@ -588,7 +629,7 @@ function getSVGString(svgNode) {
 
 function svgString2Image(svgString, width, height, format, callback) {
   format = format ? format : "png";
-  var imgsrc = "data:image/svg+xml;base64," + btoa(decodeURIComponent(encodeURIComponent(svgString))); // Convert SVG string to data URL
+  var imgsrc = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgString))); // Convert SVG string to data URL
 
   var canvas = document.createElement("canvas");
   var context = canvas.getContext("2d");
