@@ -362,7 +362,7 @@ function render(dataSet) {
     delete d.fx;
     delete d.fy;
     d3.select(this).classed("fixed", false);
-    simulation.alpha(1).restart();
+    // simulation.alpha(1).restart();
   }
   //When the drag gesture starts, the targeted node is fixed to the pointer
   //The simulation is temporarily “heated” during interaction by setting the target alpha to a non-zero value.
