@@ -93,7 +93,7 @@ function render(dataSet) {
 
   // 标题：机器人组件 灰色边框表示运行时长
   g2.append("text")
-    .text("Robot Components") // title
+    .text("图谱标题") // title
     .attr("text-anchor", "middle")
     .attr("x", width / 2)
     .attr("y", 30)
