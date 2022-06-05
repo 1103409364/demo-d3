@@ -49,10 +49,10 @@ const dataSet = {
     { source: 5, target: 3, type: "Next -->" },
   ],
 };
+const width = 890;
+const height = 500;
 
 function render(dataSet) {
-  const width = 890;
-  const height = 500;
   const nodeRadius = 17;
   const lineOpacity = 0.5;
 
@@ -461,27 +461,110 @@ render(dataSet);
 //   render(dataset2);
 // }, 3000);
 
-document.querySelector("#download-btn").addEventListener("click", download);
-// 下载 svg
-function download() {
-  //add xml declaration and serialize
-  var svgData =
-    '<?xml version="1.0" standalone="no"?>\r\n' +
-    new XMLSerializer().serializeToString(document.querySelector("svg"));
-  //convert svg source to URI data scheme.
-  // var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
-  var downloadLink = document.createElement("a");
-  downloadLink.href = URL.createObjectURL(new Blob([svgData], { type: "image/svg+xml;charset=utf-8" }));
-  downloadLink.download = new Date().toLocaleDateString() + ".svg";
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  document.body.removeChild(downloadLink);
+// document.querySelector("#download-btn").addEventListener("click", download);
+// // 下载 svg 不支持外部 css
+// function download() {
+//   //add xml declaration and serialize
+//   var svgData =
+//     '<?xml version="1.0" standalone="no"?>\r\n' +
+//     new XMLSerializer().serializeToString(document.querySelector("svg"));
+//   //convert svg source to URI data scheme.
+//   // var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
+//   var downloadLink = document.createElement("a");
+//   downloadLink.href = URL.createObjectURL(new Blob([svgData], { type: "image/svg+xml;charset=utf-8" }));
+//   downloadLink.download = new Date().toLocaleDateString() + ".svg";
+//   document.body.appendChild(downloadLink);
+//   downloadLink.click();
+//   document.body.removeChild(downloadLink);
+// }
+
+// 下载，支持外部 css
+d3.select("#download-btn").on("click", function () {
+  var svgString = getSVGString(d3.select("svg").node());
+  svgString2Image(svgString, 2 * width, 2 * height, "png", save); // passes Blob and filesize String to the callback
+
+  function save(dataBlob, filesize) {
+    // eslint-disable-next-line no-undef
+    saveAs(dataBlob, "fileName.png"); // FileSaver.js function
+  }
+});
+
+// Below are the functions that handle actual exporting:
+// getSVGString ( svgNode ) and svgString2Image( svgString, width, height, format, callback )
+function getSVGString(svgNode) {
+  svgNode.setAttribute("xlink", "http://www.w3.org/1999/xlink");
+  var cssStyleText = getCSSStyles(svgNode);
+  appendCSS(cssStyleText, svgNode);
+
+  var serializer = new XMLSerializer();
+  var svgString = serializer.serializeToString(svgNode);
+  svgString = svgString.replace(/(\w+)?:?xlink=/g, "xmlns:xlink="); // Fix root xlink without namespace
+  svgString = svgString.replace(/NS\d+:href/g, "xlink:href"); // Safari NS namespace fix
+
+  return svgString;
+
+  function getCSSStyles(parentElement) {
+    var nodesToCheck = [parentElement],
+      i;
+
+    // Add all the different nodes to check
+    var childNodes = parentElement.getElementsByTagName("*");
+    for (i = 0; i < childNodes.length; i++) {
+      nodesToCheck.push(childNodes[i]);
+    }
+
+    // Extract CSS Rules
+    var extractedCSSRules = [];
+    for (i = 0; i < document.styleSheets.length; i++) {
+      var s = document.styleSheets[i];
+
+      try {
+        if (!s.cssRules) continue;
+      } catch (e) {
+        if (e.name !== "SecurityError") throw e; // for Firefox
+        continue;
+      }
+
+      var cssRules = s.cssRules;
+      var ruleMatches;
+      for (var r = 0; r < cssRules.length; r++) {
+        ruleMatches = nodesToCheck.reduce(function (a, b) {
+          return a || b.matches(cssRules[r].selectorText);
+        }, false);
+        if (ruleMatches) extractedCSSRules.push(cssRules[r].cssText);
+      }
+    }
+    return extractedCSSRules.join(" ");
+  }
+  function appendCSS(cssText, element) {
+    var styleElement = document.createElement("style");
+    styleElement.setAttribute("type", "text/css");
+    styleElement.innerHTML = cssText;
+    var refNode = element.hasChildNodes() ? element.children[0] : null;
+    element.insertBefore(styleElement, refNode);
+  }
 }
 
-//add name spaces. serializeToString 会添加 namespace
-// if (!svgData.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
-//   svgData = svgData.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-// }
-// if (!svgData.match(/^<svg[^>]+"http:\/\/www\.w3\.org\/1999\/xlink"/)) {
-//   svgData = svgData.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-// }
+function svgString2Image(svgString, width, height, format, callback) {
+  format = format ? format : "png";
+  var imgsrc = "data:image/svg+xml;base64," + btoa(decodeURIComponent(encodeURIComponent(svgString))); // Convert SVG string to data URL
+
+  var canvas = document.createElement("canvas");
+  var context = canvas.getContext("2d");
+
+  canvas.width = width;
+  canvas.height = height;
+
+  var image = new Image();
+  image.onload = function () {
+    context.clearRect(0, 0, width, height);
+    context.drawImage(image, 0, 0, width, height);
+
+    canvas.toBlob(function (blob) {
+      var filesize = Math.round(blob.length / 1024) + " KB";
+      if (callback) callback(blob, filesize);
+    });
+  };
+
+  image.src = imgsrc;
+}

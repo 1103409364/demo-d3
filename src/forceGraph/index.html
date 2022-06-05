@@ -7,7 +7,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>forceGraph</title>
   <script src="https://cdn.bootcdn.net/ajax/libs/d3/7.4.4/d3.min.js"></script>
-  <!-- <script src="https://cdn.bootcdn.net/ajax/libs/d3/5.9.7/d3.min.js"></script> -->
+  <!-- A canvas.toBlob() implementation. 处理兼容 -->
+  <script src="../../lib/canvas-toBlob.js"></script>
+  <script src="../../lib/FileSaver.min.js"></script>
   <style>
     #force-graph {
       width: 80%;
@@ -20,6 +22,9 @@
     .nodes.fixed {
       fill: #f00;
     } /*颜色可能冲突*/
+    svg {
+      background-color: #fff; // 下载图片的背景色，不设置默认为灰色
+    }
   </style>
 </head>
 
