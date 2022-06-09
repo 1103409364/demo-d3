@@ -8,7 +8,7 @@
   <title>forceGraph</title>
   <script src="https://cdn.bootcdn.net/ajax/libs/d3/7.4.4/d3.min.js"></script>
   <!-- A canvas.toBlob() implementation. 处理兼容 -->
-  <script src="../../lib/canvas-toBlob.js"></script>
+  <!-- <script src="../../lib/canvas-toBlob.js"></script> -->
   <script src="../../lib/FileSaver.min.js"></script>
   <style>
     #force-graph {
@@ -39,7 +39,8 @@
 </head>
 
 <body>
-  <div id="force-graph"></div>
+  <!-- 直接用 svg 标签，加 id，避免存在多个 svg 标签导致下载问题 -->
+  <svg id="force-graph"></svg>
   <button type="submit" id="download-btn">download2</button>
   <script src="./script.js"></script>
 </body>

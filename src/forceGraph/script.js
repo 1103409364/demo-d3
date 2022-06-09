@@ -71,7 +71,7 @@ function render(dataSet) {
     .force("charge", d3.forceManyBody().strength(-400)) // This adds repulsion (if it's negative) between nodes.
     .force("center", d3.forceCenter(width / 2, height / 2 + 10)); // 调整在画布中的位置 This force attracts nodes to the center of the svg area
 
-  const svg = d3.select("#force-graph").append("svg").attr("viewBox", [0, 0, width, height]);
+  const svg = d3.select("#force-graph").attr("viewBox", [0, 0, width, height]);
   // 分组 g1 画主要的图形，g2 画辅助的图形，分组后便与做放大平移等
   const g1 = svg.append("g").attr("cursor", "grab");
   const g2 = svg.append("g");
@@ -549,7 +549,7 @@ render(dataSet);
 //   //add xml declaration and serialize
 //   var svgData =
 //     '<?xml version="1.0" standalone="no"?>\r\n' +
-//     new XMLSerializer().serializeToString(document.querySelector("svg"));
+//     new XMLSerializer().serializeToString(document.querySelector("#force-graph"));
 //   //convert svg source to URI data scheme.
 //   // var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
 //   var downloadLink = document.createElement("a");
@@ -562,7 +562,7 @@ render(dataSet);
 
 // 下载，支持外部 css
 d3.select("#download-btn").on("click", function () {
-  var svgString = getSVGString(d3.select("svg").node());
+  var svgString = getSVGString(d3.select("#force-graph").node());
   svgString2Image(svgString, 2 * width, 2 * height, "png", save); // passes Blob and filesize String to the callback
 
   function save(dataBlob, filesize) {
@@ -641,7 +641,6 @@ function svgString2Image(svgString, width, height, format, callback) {
   image.onload = function () {
     context.clearRect(0, 0, width, height);
     context.drawImage(image, 0, 0, width, height);
-
     canvas.toBlob(function (blob) {
       var filesize = Math.round(blob.length / 1024) + " KB";
       if (callback) callback(blob, filesize);
