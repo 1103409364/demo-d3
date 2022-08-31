@@ -85,9 +85,17 @@ d3.csv("data.csv").then(function (data) {
   // add the X Axis
   svg
     .append("g")
+    .attr("id", "x-axis")
     .attr("transform", "translate(0," + height + ")")
     .call(d3.axisBottom(x));
 
   // add the Y Axis
   svg.append("g").call(d3.axisLeft(y));
+
+  d3.selectAll(".tick").on("click", clickMe);
+
+  function clickMe(event, d) {
+    console.log(event, d.toLocaleDateString());
+    alert("I've been clicked!");
+  }
 });
